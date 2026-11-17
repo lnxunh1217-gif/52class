@@ -1,0 +1,79 @@
+/* 오이반 클래스룸 스크린 · 피클링과 같은 디자인
+   - 글꼴: 프리젠테이션 (제목 800 · 강조 600 · 본문 400)
+   - 색: 크림 카드 + 연두 테두리 + 진한 올리브 글씨
+   - 모양: 얇은 테두리, 둥근 모서리 20px, 부드러운 그림자
+   - 치이카와 친구들이 위젯 가장자리에서 빼꼼
+   이 파일만 빼면 예전 모습으로 돌아가요. */
+@font-face { font-family: Freesentation; src: url(assets/FreesentationVF.woff2) format("woff2"); font-weight: 100 800; font-display: swap; }
+
+:root {
+  --pk-ink: #3b4630;
+  --pk-soft: #5a6650;
+  --pk-title: #4a6332;
+  --pk-green: #4f7a35;
+  --pk-line: #dfe8cd;
+  --pk-card: #fffef8;
+  --pk-cream: #fcfdf8;
+  --pk-tint: #f3f7e8;
+  --pk-tint-2: #e8f0d6;
+  --pk-yellow: #e0a92e;
+}
+
+/* 글꼴 (아이콘 글꼴은 그대로) */
+body, #root, #root *:not(i):not([class*="fa-"]):not(.fa) { font-family: Freesentation, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif !important; }
+#root { color: var(--pk-ink); letter-spacing: normal; }
+#root :is(h1, h2, h3) { font-weight: 800 !important; color: var(--pk-title) !important; }
+#root :is(b, strong, [class~="font-bold"], [class~="font-black"], [class~="font-extrabold"]) { font-weight: 600 !important; }
+
+/* 배경: 피클링 홈처럼 연한 크림-연두 */
+#root > div[class~="bg-gradient-to-tr"] {
+  background: radial-gradient(ellipse at 10% 0%, #f3f8e4 0, transparent 55%), radial-gradient(ellipse at 90% 100%, #fdf6e3 0, transparent 50%), #f7f9ef !important;
+}
+
+/* 카드: 크림색, 얇은 연두 테두리, 둥근 모서리, 부드러운 그림자 */
+#root :is([class~="bg-white/95"], [class~="bg-white/90"], [class~="bg-white/80"]) { background: var(--pk-card) !important; backdrop-filter: none !important; }
+#root :is([class~="border-emerald-100"], [class~="border-emerald-200"], [class~="border-emerald-300"], [class~="border-stone-200"]) { border-color: var(--pk-line) !important; }
+#root :is([class~="border-[4px]"], [class~="border-[6px]"], [class~="border-4"]) { border-width: 1.5px !important; }
+#root :is([class~="border-[3px]"], [class~="border-2"]) { border-width: 1px !important; }
+#root :is([class~="rounded-[28px]"], [class~="rounded-[36px]"]) { border-radius: 20px !important; }
+#root [class~="rounded-[18px]"] { border-radius: 14px !important; }
+#root .widget-shadow { box-shadow: 0 2px 0 #e6ecd8, 0 14px 30px -18px rgba(74, 99, 50, .45) !important; }
+#root [class*="shadow-[2px_2px_0px"], #root [class*="shadow-[4px_4px_0px"], #root [class*="shadow-[6px_6px_0px"], #root [class*="shadow-[0_4px_0_"], #root [class*="shadow-[0_8px_0_"] { box-shadow: 0 2px 0 #e6ecd8 !important; }
+
+/* 색: 초록 계열을 피클링 올리브로 */
+#root :is([class~="text-emerald-950"], [class~="text-emerald-800"], [class~="text-emerald-700"]) { color: var(--pk-title) !important; }
+#root :is([class~="text-emerald-600"], [class~="text-emerald-500"]) { color: var(--pk-green) !important; }
+#root :is([class~="text-stone-700"], [class~="text-stone-800"]) { color: var(--pk-ink) !important; }
+#root :is([class~="text-stone-500"], [class~="text-stone-600"]) { color: var(--pk-soft) !important; }
+#root :is([class~="bg-emerald-50"], [class~="bg-emerald-50/30"]) { background-color: var(--pk-tint) !important; }
+#root :is([class~="bg-emerald-100"], [class~="bg-emerald-200"]) { background-color: var(--pk-tint-2) !important; }
+#root [class~="bg-emerald-500"] { background-color: #6a9a45 !important; }
+
+/* 너무 작은 글씨(8~9px)는 칠판에서 읽기 좋게 */
+#root [class~="text-[9px]"] { font-size: 11px !important; }
+#root [class~="text-[8px]"] { font-size: 10px !important; }
+
+/* 아래 도구 막대 */
+#root footer { border-color: var(--pk-line) !important; background: var(--pk-card) !important; }
+
+/* ===== 치이카와 친구들 ===== */
+/* 시계 카드 위에서 치이카와가 빼꼼 */
+#root [class~="oi-hero-in"][class~="h-full"] { position: relative; }
+#root [class~="oi-hero-in"][class~="h-full"]::before {
+  content: ""; position: absolute; top: -34px; right: 18px; width: 92px; height: 92px; z-index: 3; pointer-events: none;
+  background: url(assets/chiikawa/chiikawa.png) center / contain no-repeat;
+  animation: pk-peek 4s ease-in-out infinite;
+}
+/* 시계 카드 아래 모서리에 하치와레 */
+#root [class~="oi-hero-in"][class~="h-full"]::after {
+  content: ""; position: absolute; bottom: -10px; left: 6px; width: 84px; height: 84px; z-index: 3; pointer-events: none;
+  background: url(assets/chiikawa/hachiware.png) center / contain no-repeat;
+}
+/* 도구 막대 양쪽 끝에 우사기와 모몽가 */
+#root footer::before, #root footer::after { content: ""; position: absolute; bottom: 54%; width: 76px; height: 76px; pointer-events: none; }
+#root footer::before { left: -46px; background: url(assets/chiikawa/usagi.png) center / contain no-repeat; animation: pk-hop 3s ease-in-out infinite; }
+#root footer::after { right: -42px; background: url(assets/chiikawa/momonga.png) center / contain no-repeat; }
+
+@keyframes pk-peek { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px) rotate(-3deg); } }
+@keyframes pk-hop { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-8px); } 60% { transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { #root [class~="oi-hero-in"][class~="h-full"]::before, #root footer::before { animation: none; } }
