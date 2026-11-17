@@ -6389,9 +6389,9 @@ body {
     .font-cute { letter-spacing: .3px; }
   </style>
   <!-- 피클링과 같은 디자인 (글꼴·색·모양) + 치이카와 친구들 -->
-  <link rel="stylesheet" href="pickling-look.css">
+  <link rel="stylesheet" href="pickling-look.css?v=20261117-2">
   <script src="assets/pickling-bridge.js"></script>
-  <script src="assets/mascot-reminders.js"></script>
+  <script src="assets/mascot-reminders.js?v=20261117-2"></script>
 </head>
 <body class="w-screen h-screen relative bg-slate-100 overflow-hidden">
 
@@ -7246,22 +7246,23 @@ window.OI_ASSETS = {
           )
         };
 
-        const WarningBoardWidget=({students,warningStates,onUpdateWarning,onUndoWarning,undoAvailable,onQuickWarning,reasons,width,connected})=>{
-          const [picker,setPicker]=useState(null),[message,setMessage]=useState(''),[pending,setPending]=useState(false);const pendingRef=useRef(false);
+        const WarningBoardWidget=({students,warningStates,onUpdateWarning,onUndoWarning,undoAvailable,onQuickWarning,reasons,width,connected,syncLabel})=>{
+          const [picker,setPicker]=useState(null),[message,setMessage]=useState(''),[pending,setPending]=useState(false),[receipts,setReceipts]=useState({});const pendingRef=useRef(false);
           const choose=async(reasonId)=>{if(!picker||pendingRef.current)return;if(reasonId==='other'&&!picker.other){setPicker({...picker,otherMode:true});return;}
             if(reasonId==='other'&&picker.other.trim().length<2){setMessage('기타 사유를 2글자 이상 적어 주세요.');return;}
             pendingRef.current=true;setPending(true);setMessage('저장 중이에요.');
-            try{const result=await onQuickWarning(picker.index,{id:picker.id,reasonId,otherReason:reasonId==='other'?picker.other.trim():''});setMessage(result.message);if(result.ok)setPicker(null);}
+            try{const result=await onQuickWarning(picker.index,{id:picker.id,reasonId,otherReason:reasonId==='other'?picker.other.trim():''});setMessage(result.message);setReceipts(prev=>({...prev,[picker.index]:{ok:result.ok,text:result.message}}));if(result.ok)setPicker(null);}
+            catch(error){const text=error.message||'저장하지 못했어요. 연결을 확인해 주세요.';setMessage(text);setReceipts(prev=>({...prev,[picker.index]:{ok:false,text}}));}
             finally{pendingRef.current=false;setPending(false);}
           };
-          const undo=(index)=>{setMessage('피클링 카드에서 취소를 확인해 주세요.');onUndoWarning(index);};
+          const undo=(index)=>{setReceipts(prev=>{const next={...prev};delete next[index];return next;});setMessage('피클링 카드에서 취소를 확인해 주세요.');onUndoWarning(index);};
           const open=(index)=>{if(!pendingRef.current){setPicker({index,id:crypto.randomUUID(),other:'',otherMode:false});setMessage('');}};
           return <div className="w-full h-full flex flex-col no-drag gap-2">
-            <div className="flex flex-wrap justify-between gap-2 bg-stone-100 p-2 rounded-xl"><span className="text-xs">{connected?'꺼진 불: 사유 고르기 · 켜진 불: 최근 경고 취소':'피클링 카드에서 교사 로그인을 먼저 해 주세요.'}</span><button className="bg-white rounded-xl px-3 py-2 text-xs" onClick={()=>onUpdateWarning(null,true)}>피클링 새로고침</button></div>
+            <div className="flex flex-wrap justify-between gap-2 bg-stone-100 p-2 rounded-xl"><span className="text-xs">{connected?'피클링 연결됨 · '+(syncLabel||'')+' · 꺼진 불: 사유 고르기 · 켜진 불: 최근 경고 취소':'피클링 카드에서 교사 로그인을 먼저 해 주세요.'}</span><button className="bg-white rounded-xl px-3 py-2 text-xs" onClick={()=>onUpdateWarning(null,true)}>피클링 새로고침</button></div>
             <p role="status" className="text-sm">{message}</p><div className="flex-1 overflow-y-auto grid gap-2 min-h-0 content-start" style={{gridTemplateColumns:'repeat('+Math.max(2,Math.floor(width/160))+',minmax(0,1fr))'}}>
               {students.map((name,i)=>{const count=warningStates[i]??-1;return <React.Fragment key={name}><div className="border-2 border-emerald-200 rounded-2xl p-3 bg-white flex flex-col items-center gap-2">
                 <b className="text-sm text-center">{name}</b><div className="flex gap-2 bg-stone-800 rounded-full p-2" aria-label={count>=0?'오늘 경고 '+count+'회':'미연결'}>{[1,2,3].map(level=><button type="button" key={level} title={count>=level?'최근 경고 1회 취소':'경고 사유 선택'} aria-label={name+(count>=level?' 최근 경고 취소':' 경고 사유 선택')} disabled={!connected||count<0||pending||(count>=level&&!undoAvailable?.[i])} onClick={()=>count>=level?undo(i):open(i)} style={{display:'block',width:28,height:28,padding:0,borderRadius:'50%',border:0,background:count>=level?['','#34d399','#fbbf24','#f43f5e'][level]:'#57534e'}} />)}</div>
-                <span className="text-xs">{count>=0?'오늘 '+count+'회':'명단 연결 확인'}</span><button type="button" disabled={!connected||count<0||pending} onClick={()=>open(i)} className="rounded-xl px-3 py-2 bg-emerald-100 text-sm disabled:opacity-40">경고 +1</button>{count>0&&<button type="button" disabled={!undoAvailable?.[i]||pending} onClick={()=>undo(i)} className="text-xs underline text-stone-500 disabled:opacity-40">최근 경고 취소</button>}</div>
+                <span className="text-xs">{count>=0?'오늘 저장된 경고 '+count+'회':'명단 연결 확인'}</span><button type="button" disabled={!connected||count<0||pending} onClick={()=>open(i)} className="rounded-xl px-3 py-2 bg-emerald-100 text-sm disabled:opacity-40">경고 +1</button>{receipts[i]&&<p className={'pk-save-receipt '+(receipts[i].ok?'is-saved':'is-error')}>{receipts[i].text}</p>}{count>0&&<button type="button" disabled={!undoAvailable?.[i]||pending} onClick={()=>undo(i)} className="text-xs underline text-stone-500 disabled:opacity-40">최근 경고 취소</button>}</div>
                 {picker?.index===i&&<div className="pk-warning-reasons"><div><b>{name} · 경고 사유</b><button disabled={pending} onClick={()=>setPicker(null)}>닫기</button></div><p>사유를 누르면 경고 1회가 바로 저장돼요.</p><div className="pk-reason-options">{reasons.map(r=><button type="button" key={r.id} disabled={pending} onClick={()=>choose(r.id)}>{r.label}</button>)}</div>{picker.otherMode&&<label>기타 사유<input maxLength="100" value={picker.other} onChange={e=>setPicker({...picker,other:e.target.value})}/><button disabled={pending} onClick={()=>choose('other')}>이 사유로 저장</button></label>}</div>}
               </React.Fragment>;})}
             </div></div>;
@@ -7946,7 +7947,7 @@ window.OI_ASSETS = {
       const [picklingStatus,setPicklingStatus]=useState(null);
       const picklingBridge=useRef(null);
       useEffect(()=>{
-        picklingBridge.current=window.PicklingScreenBridge.create({origin:PICKLING_ORIGIN,getFrame:()=>document.getElementById('pickling-card-frame')?.contentWindow,onTemp:setClassTemp,onStatus:setPicklingStatus,onDisconnect:()=>setPicklingStatus(null)});
+        picklingBridge.current=window.PicklingScreenBridge.create({origin:PICKLING_ORIGIN,getFrame:()=>document.getElementById('pickling-card-frame')?.contentWindow,onTemp:setClassTemp,onStatus:status=>setPicklingStatus({...status,syncedAt:new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})}),onDisconnect:()=>setPicklingStatus(null)});
         return ()=>picklingBridge.current?.destroy();
       },[]);
       useEffect(()=>{picklingBridge.current?.temp(classTemp);},[classTemp]);
@@ -8463,7 +8464,7 @@ window.OI_ASSETS = {
                 {w.id.startsWith('panseo') && <NoticesWidget notes={w.data?.notes !== undefined ? w.data.notes : panseoNotes} onUpdateNotes={(val) => w.id === 'panseo' ? handleUpdatePanseoNotes(val) : handleUpdateWidgetData(w.id, { notes: val })} fontSize={w.data?.fontSize !== undefined ? w.data.fontSize : panseoFontSize} onUpdateFontSize={(val) => w.id === 'panseo' ? handleUpdatePanseoFontSize(val) : handleUpdateWidgetData(w.id, { fontSize: Math.max(14, Math.min(60, (w.data?.fontSize || panseoFontSize) + val)) })} isChalkMode={w.data?.chalkMode !== undefined ? w.data.chalkMode : panseoChalkMode} onUpdateChalkMode={(val) => w.id === 'panseo' ? handleUpdatePanseoChalkMode(val) : handleUpdateWidgetData(w.id, { chalkMode: val })} width={w.width} height={w.height} />}
                 {w.id.startsWith('qr') && <QRCodeWidget text={w.data?.text !== undefined ? w.data.text : qrText} onUpdateText={(val) => w.id === 'qr' ? handleUpdateQrText(val) : handleUpdateWidgetData(w.id, { text: val })} label={w.data?.label !== undefined ? w.data.label : qrLabel} onUpdateLabel={(val) => w.id === 'qr' ? handleUpdateQrLabel(val) : handleUpdateWidgetData(w.id, { label: val })} width={w.width} height={w.height} />}
                 {w.id === 'clock' && <DateClockWidget subMode={clockSubMode} onSetSubMode={handleSetClockSubMode} timerSeconds={clockTimerSeconds} onSetTimerSeconds={handleSetClockTimerSeconds} width={w.width} height={w.height} />}
-                {w.id === 'warning-board' && <WarningBoardWidget students={students} connected={!!picklingStatus} warningStates={Object.fromEntries(students.map((name,i)=>{const row=picklingStatus?.warnings.find(r=>r.name.trim()===window.PicklingScreenBridge.normalized(name));return [i,row?row.count:-1];}))} onUpdateWarning={handleUpdateWarning} onUndoWarning={handleUndoWarning} onQuickWarning={handleQuickWarning} reasons={picklingStatus?.reasons||[]} undoAvailable={students.map(name=>!!picklingStatus?.warnings.find(r=>r.name.trim()===window.PicklingScreenBridge.normalized(name))?.undo)} width={w.width} height={w.height} />}
+                {w.id === 'warning-board' && <WarningBoardWidget students={students} connected={!!picklingStatus} syncLabel={picklingStatus?.syncedAt} warningStates={Object.fromEntries(students.map((name,i)=>{const row=picklingStatus?.warnings.find(r=>r.name.trim()===window.PicklingScreenBridge.normalized(name));return [i,row?row.count:-1];}))} onUpdateWarning={handleUpdateWarning} onUndoWarning={handleUndoWarning} onQuickWarning={handleQuickWarning} reasons={picklingStatus?.reasons||[]} undoAvailable={students.map(name=>!!picklingStatus?.warnings.find(r=>r.name.trim()===window.PicklingScreenBridge.normalized(name))?.undo)} width={w.width} height={w.height} />}
                 {w.id === 'voice-level' && <VoiceLevelWidget voiceLevel={voiceLevel} onUpdateVoiceLevel={handleUpdateVoiceLevel} width={w.width} height={w.height} />}
                 {w.id === 'scoreboard' && <ScoreboardWidget teams={scoreboardTeams} onUpdateScore={handleUpdateScore} onUpdateTeamName={handleUpdateTeamName} onAddTeam={handleAddTeam} onRemoveTeam={handleRemoveTeam} onResetScores={handleResetScores} width={w.width} height={w.height} />}
                 {w.id === 'time-attack' && <TimeAttackWidget width={w.width} height={w.height} />}

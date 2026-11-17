@@ -134,3 +134,5 @@ body, #root, #root *:not(i):not([class*="fa-"]):not(.fa) { font-family: Freesent
  #root [data-widget-id=warning-board]{min-height:500px}
  #root [data-widget-id=warning-board]>div:nth-child(2){max-height:65vh}
 }
+
+.pk-save-receipt{margin:0;padding:7px 8px;border-radius:10px;line-height:1.5;font-size:13px;word-break:keep-all;overflow-wrap:anywhere}.pk-save-receipt.is-saved{background:#eaf5df;color:#4c6938}.pk-save-receipt.is-error{background:#fff0ee;color:#945044}
