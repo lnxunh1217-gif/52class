@@ -6390,7 +6390,7 @@ body {
   </style>
   <!-- 피클링과 같은 디자인 (글꼴·색·모양) + 치이카와 친구들 -->
   <link rel="stylesheet" href="pickling-look.css?v=20261117-2">
-  <script src="assets/pickling-bridge.js"></script>
+  <script src="assets/pickling-bridge.js?v=20261117-words"></script>
   <script src="assets/mascot-reminders.js?v=20261117-2"></script>
 </head>
 <body class="w-screen h-screen relative bg-slate-100 overflow-hidden">
@@ -7951,6 +7951,8 @@ window.OI_ASSETS = {
         return ()=>picklingBridge.current?.destroy();
       },[]);
       useEffect(()=>{picklingBridge.current?.temp(classTemp);},[classTemp]);
+      // 이번 주 영어 단어도 피클링 영어단어 익히기로 보내요 (피클링 카드가 연결되면 저장).
+      useEffect(()=>{picklingBridge.current?.words(englishWordsText);},[englishWordsText]);
 
       const [dutyOrder, setDutyOrder] = useState(() => initialMaster?.dutyOrder || []);
       const [dutyCursor, setDutyCursor] = useState(() => initialMaster?.dutyCursor || 0);
