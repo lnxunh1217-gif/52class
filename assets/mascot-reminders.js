@@ -6,7 +6,7 @@ function active(now=new Date()){
  if(minute>=720&&minute<780)items.push({id:'lunch',text:'오늘의 직업, 모둠 역할, 청소를 체크하세요!'});
  if(weekday===5&&minute>=720)items.push({id:'tidy',text:'오늘은 정리정돈 검사하는 날이에요!'});
  if(weekday===2&&minute>=780)items.push({id:'mata',text:'내일(수요일) 아침 활동은 마타수학이에요!'});
- if(minute>=840)items.push({id:'home',text:'오늘의 실천 약속과 태블릿 충전을 체크하세요!'});
+ if(minute>=840)items.push({id:'home',text:'집에 가기 전에 알림장을 쓰고, 오늘의 실천 약속과 태블릿 충전을 체크하세요!'});
  return {date,items};
 }
 root.PicklingMascotReminders={active,context};
