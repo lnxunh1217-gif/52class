@@ -6298,7 +6298,7 @@ readers do not read off random characters that represent icons */
 
 .fa-solid,.fas{font-family:'Font Awesome 6 Free' !important;font-weight:900;}
   </style>
-  
+
   <style>
     /* 몽토리 글꼴(7.5MB)은 피클링과 같은 프리젠테이션 글꼴로 바꿨어요 — pickling-look.css */
 body {
@@ -6392,7 +6392,7 @@ body {
   <link rel="stylesheet" href="pickling-look.css?v=20261117-2">
   <script src="assets/pickling-bridge.js?v=20261119-hub"></script>
   <script src="assets/classroom-tools.js?v=20261119-hub"></script>
-  <link rel="stylesheet" href="assets/classroom-tools.css?v=20261119-hub">
+  <link rel="stylesheet" href="assets/classroom-tools.css?v=20261119-draw">
   <script src="assets/mascot-reminders.js?v=20261117-2"></script>
 </head>
 <body class="w-screen h-screen relative bg-slate-100 overflow-hidden">
@@ -6423,14 +6423,14 @@ window.OI_ASSETS = {
     let globalAudioCtx = null;
     let globalMusicTimer = null;
     let activeOscillators = [];
-    
+
     const stopMusic = () => {
       if (globalMusicTimer) clearInterval(globalMusicTimer);
       globalMusicTimer = null;
       activeOscillators.forEach(osc => { try { osc.stop(); osc.disconnect(); } catch(e){} });
       activeOscillators = [];
     };
-    
+
     const playMusic = (type) => {
       stopMusic();
       if (!globalAudioCtx) { globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -6494,7 +6494,7 @@ window.OI_ASSETS = {
         }
         if (globalAudioCtx.state === 'suspended') globalAudioCtx.resume();
         const ctx = globalAudioCtx;
-        
+
         if (type === 'tick') {
           const osc = ctx.createOscillator(); const gain = ctx.createGain();
           osc.type = 'sine'; osc.frequency.setValueAtTime(650, ctx.currentTime);
@@ -6576,7 +6576,7 @@ window.OI_ASSETS = {
       const handleMouseDown = (e) => {
         if(window.innerWidth<=1000)return; if (e.target.closest('.no-drag')) return; onFocus(id); setDragStart({ x: e.clientX - x, y: e.clientY - y }); };
       const handleTouchStart = (e) => { if(window.innerWidth<=1000)return; if (e.target.closest('.no-drag')) return; onFocus(id); const touch = e.touches[0]; setDragStart({ x: touch.clientX - x, y: touch.clientY - y }); };
-      
+
       const handleResizeMouseDown = (e, dir) => { onFocus(id); setResizeStart({ w: width, h: height, x: x, y: y, startX: e.clientX, startY: e.clientY, dir }); e.stopPropagation(); e.preventDefault(); };
       const handleResizeTouchStart = (e, dir) => { onFocus(id); const touch = e.touches[0]; setResizeStart({ w: width, h: height, x: x, y: y, startX: touch.clientX, startY: touch.clientY, dir }); e.stopPropagation(); };
 
@@ -6587,7 +6587,7 @@ window.OI_ASSETS = {
           const dy = clientY - resizeStart.startY;
           let newW = resizeStart.w; let newH = resizeStart.h; let newX = resizeStart.x; let newY = resizeStart.y;
           const minW = 280; const minH = id==='pickling'?340:200;
-          
+
           if (resizeStart.dir.includes('e')) newW = Math.max(minW, resizeStart.w + dx);
           if (resizeStart.dir.includes('s')) newH = Math.max(minH, resizeStart.h + dy);
           if (resizeStart.dir.includes('w')) { 
@@ -6600,7 +6600,7 @@ window.OI_ASSETS = {
             if (newH > minH) newY = resizeStart.y + dy; 
             else newY = resizeStart.y + resizeStart.h - minH; 
           }
-          
+
           onResize(id, newW, newH, newX, newY);
         };
 
@@ -6772,7 +6772,7 @@ window.OI_ASSETS = {
       const [searchQuery, setSearchQuery] = useState("");
       const [searchResults, setSearchResults] = useState([]);
       const [loading, setLoading] = useState(false);
-      
+
       const DEFAULT_SCHOOL = { name: '동산초등학교', address: '전남 순천시 서면 순천로 16', schoolCode: '8522047', officeCode: 'Q10' };
       const [schoolInfo, setSchoolInfo] = useState(() => {
         try {
@@ -6934,11 +6934,13 @@ window.OI_ASSETS = {
         <p className="pk-memo-status" role="status">{message||'창을 키우면 글씨도 함께 커져요. 저장하면 학생 피클링에 반영돼요.'}</p></div>;
     };
 
+    const DrawMascot=({busy=false,done=false,compact=false})=><div className={'pk-draw-mascot'+(compact?' pk-draw-mascot-compact':'')} data-busy={busy} data-done={done}><img src={'assets/classroom-mascots/'+(busy?'running':'cheering')+'-v1.png'} alt={busy?'두근두근 뽑는 치이카와':done?'뽑힌 친구를 축하하는 치이카와':'뽑기를 기다리는 치이카와'}/><p role="status">{busy?'두근두근… 누가 뽑힐까요?':done?'짜잔! 함께 축하해요 ♡':'치이카와와 행운을 뽑아요 ♡'}</p></div>;
+
     const DrawHubWidget=({randomProps,width,height})=>{
       const [view,setView]=useState('menu');
       const choose=id=>{if(['students','groups','custom'].includes(id))randomProps.onSetPickerMode(id);setView(id);};
       const menus=[['students','🙋','학생 뽑기','한 명씩 랜덤으로'],['groups','🌱','모둠 뽑기','함께할 모둠 선택'],['custom','✏️','직접 입력','단어 · 번호 · 역할'],['ladder','🪜','사다리 뽑기','선을 따라 두근두근'],['lot','🎟️','제비 뽑기','행운의 제비 선택']];
-      return <div className="pk-draw-hub no-drag">{view==='menu'?<div className="pk-draw-menu">{menus.map(([id,icon,label,help])=><button key={id} onClick={()=>choose(id)}><span>{icon}</span><b>{label}</b><small>{help}</small></button>)}</div>:<><div className="pk-draw-header"><button onClick={()=>setView('menu')}>‹ 뽑기 종류</button><b>{menus.find(m=>m[0]===view)?.[2]}</b></div><div className="pk-draw-content">{['ladder','lot'].includes(view)?<LotteryWidget key={view} initialMode={view==='lot'?'lots':'ladder'} students={randomProps.students} width={width} height={height-50}/>:<RandomPickerWidget {...randomProps} width={width} height={height-50}/>}</div></>}</div>;
+      return <div className="pk-draw-hub no-drag">{view==='menu'?<><DrawMascot/><div className="pk-draw-menu">{menus.map(([id,icon,label,help])=><button key={id} onClick={()=>choose(id)}><span>{icon}</span><b>{label}</b><small>{help}</small></button>)}</div></>:<><div className="pk-draw-header"><button onClick={()=>setView('menu')}>‹ 뽑기 종류</button><b>{menus.find(m=>m[0]===view)?.[2]}</b></div><div className="pk-draw-content">{['ladder','lot'].includes(view)?<LotteryWidget key={view} initialMode={view==='lot'?'lots':'ladder'} students={randomProps.students} width={width} height={height-50}/>:<RandomPickerWidget {...randomProps} width={width} height={height-50}/>}</div></>}</div>;
     };
 
     const STICKERS = ['🥒','🎀','💗','⭐','🌸','🐑','🫧','🍀','🌈','🧁','🐣','👑','🍓','🦄'];
@@ -7140,8 +7142,9 @@ window.OI_ASSETS = {
                  <textarea value={customPickerItems} onChange={e=>onUpdateCustomPickerItems(e.target.value)} placeholder="항목을 줄바꿈으로 입력" className="w-full h-20 bg-white border-4 border-amber-200 focus:border-amber-400 rounded-xl p-2 text-sm allow-select shrink-0 resize-none font-bold text-stone-700 outline-none transition-colors" />
                )}
                <div className="flex-1 bg-white rounded-3xl border-[5px] border-amber-300 shadow-inner flex flex-col items-center justify-center p-4 min-h-0 relative overflow-hidden">
+                 <DrawMascot busy={picking} done={!picking&&result!=="누가 될까요?"}/>
                  <div className="font-black text-amber-800 font-cute text-center break-keep w-full z-10 drop-shadow-md transition-all" style={{ fontSize: `${Math.round(44*pkScale)}px` }}>{result}</div>
-                 {picking && <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] rounded-2xl flex items-center justify-center z-20 animate-spin" style={{ fontSize: `${Math.round(56*pkScale)}px` }}>🎲</div>}
+
                </div>
                <div className="flex gap-2 shrink-0">
                   <button onClick={handleStart} disabled={picking} className="flex-1 bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-2xl font-cute font-black text-2xl tracking-widest shadow-[0_6px_0_#b45309] active:shadow-none active:translate-y-[6px] transition-all disabled:opacity-50 disabled:translate-y-0 border-2 border-amber-600">뽑기!</button>
@@ -7414,6 +7417,7 @@ window.OI_ASSETS = {
 
       return (
         <div className="w-full h-full flex flex-col no-drag gap-2">
+          <DrawMascot compact done={!!assign||litStart!==null}/>
           <div className="flex gap-1.5 shrink-0 flex-wrap">
             <div className="flex bg-lime-100 rounded-xl p-1 gap-1 border-2 border-lime-200">
               <button onClick={() => { setTarget('individual'); setAssign(null); setLadder(null); playSound('tick'); }} className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${target === 'individual' ? 'bg-lime-500 text-white shadow-[0_2px_0_#4d7c0f]' : 'text-lime-800'}`}>개인별</button>
@@ -7866,7 +7870,7 @@ window.OI_ASSETS = {
         if (saved) { const bgObj = BACKGROUNDS.find(b => b.id === saved); if (bgObj) return bgObj; }
         return BACKGROUNDS[0];
       });
-      
+
       const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
       const [isSettingOpen, setIsSettingOpen] = useState(false);
       const [isToolsOpen,setIsToolsOpen]=useState(false);
@@ -7935,11 +7939,11 @@ window.OI_ASSETS = {
         }
         return initialMaster?.table || NEW_DEFAULT_TABLE;
       });
-      
+
       const [lunchText, setLunchText] = useState(() => initialMaster?.lunchText || "상단의 [자동 연동] 버튼을 눌러\n오늘의 급식을 불러와보세요! 🍱");
       const [checklistTasks, setChecklistTasks] = useState(() => initialMaster?.checklistTasks || ["자리 청소", "구역 청소"]);
       const [checklistState, setChecklistState] = useState(() => initialMaster?.checklistState || {});
-      
+
       const [pickerHistory, setPickerHistory] = useState(() => initialMaster?.pickerHistory || []);
       const [groupPickerHistory, setGroupPickerHistory] = useState(() => initialMaster?.groupPickerHistory || []);
       const [pickerExclude, setPickerExclude] = useState(() => initialMaster?.pickerExclude || false);
@@ -7957,14 +7961,14 @@ window.OI_ASSETS = {
       const [whiteboardNotes, setWhiteboardNotes] = useState(() => initialMaster?.whiteboardNotes !== undefined ? initialMaster.whiteboardNotes : "");
       const [whiteboardFontSize, setWhiteboardFontSize] = useState(() => initialMaster?.whiteboardFontSize || 24);
       const [whiteboardChalkMode, setWhiteboardChalkMode] = useState(() => initialMaster?.whiteboardChalkMode !== false);
-      
+
       const [panseoNotes, setPanseoNotes] = useState(() => initialMaster?.panseoNotes !== undefined ? initialMaster.panseoNotes : "");
       const [panseoFontSize, setPanseoFontSize] = useState(() => initialMaster?.panseoFontSize || 24);
       const [panseoChalkMode, setPanseoChalkMode] = useState(() => initialMaster?.panseoChalkMode !== false);
-      
+
       const [qrText, setQrText] = useState(() => initialMaster?.qrText || "https://indischool.com");
       const [qrLabel, setQrLabel] = useState(() => initialMaster?.qrLabel || "");
-      
+
       const [warningStates, setWarningStates] = useState(() => initialMaster?.warningStates || {});
       const [voiceLevel, setVoiceLevel] = useState(() => initialMaster?.voiceLevel || 0);
       const [scoreboardTeams, setScoreboardTeams] = useState(() => initialMaster?.scoreboardTeams || [
@@ -8213,10 +8217,10 @@ window.OI_ASSETS = {
         const type = isMulti ? `${baseType}_${Date.now()}` : baseType;
 
         if (!isMulti && widgets.find(item => item.id === type)) { handleClose(type); return; }
-        
+
         const fixedIds = ['timetable', 'lunch', 'pickling'];
         const isFixed = fixedIds.includes(baseType);
-        
+
         let startX, startY, startW, startH;
 
         if (isFixed) {
@@ -8247,14 +8251,14 @@ window.OI_ASSETS = {
 
         const newZ = maxZIndex + 1; setMaxZIndex(newZ);
         const newWidget = { id: type, title, icon, x: startX, y: startY, width: startW, height: startH, zIndex: newZ, isFixed: isFixed, isMinimized: false, data: {} };
-        
+
         if (baseType === 'panseo') newWidget.data = { notes: "", fontSize: 24, chalkMode: true };
         if (baseType === 'qr') newWidget.data = { text: "", label: "" };
 
         setWidgets(prev => [...prev, newWidget]);
         playSound('pop');
       };
-      
+
       const handleResetBoard = () => { 
         setWidgets(generateDefaultLayout(window.innerWidth, window.innerHeight)); 
         playSound('fanfare'); 
@@ -8281,7 +8285,7 @@ window.OI_ASSETS = {
         setGridCheckState(prev => { const n = {...prev}; students.forEach((_, sIdx) => delete n[`${sIdx}_${taskName}`]); return n; }); 
         playSound('pop'); 
       };
-      
+
       const handlePick = (winnerName) => setPickerHistory(prev => [winnerName, ...prev.filter(name => name !== winnerName)]);
       const handleResetHistory = () => { setPickerHistory([]); playSound('pop'); };
       const handlePickGroup = (winnerName) => setGroupPickerHistory(prev => [winnerName, ...prev.filter(name => name !== winnerName)]);
