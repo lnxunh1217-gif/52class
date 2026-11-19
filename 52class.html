@@ -6393,6 +6393,8 @@ body {
   <script src="assets/pickling-bridge.js?v=20261119-hub"></script>
   <script src="assets/classroom-tools.js?v=20261119-hub"></script>
   <link rel="stylesheet" href="assets/classroom-tools.css?v=20261119-draw">
+  <!-- 테마별 색감·버튼 톤·칠판 가독성 (data-theme 기준) -->
+  <link rel="stylesheet" href="assets/classroom-themes.css?v=20261119-pantone">
   <script src="assets/mascot-reminders.js?v=20261117-2"></script>
 </head>
 <body class="w-screen h-screen relative bg-slate-100 overflow-hidden">
@@ -7860,6 +7862,10 @@ window.OI_ASSETS = {
       useEffect(()=>{const timer=setInterval(()=>setNow(new Date()),30000);return ()=>clearInterval(timer);},[]);
       const {date,items}=window.PicklingMascotReminders.active(now),shown=items.filter(item=>!(Array.isArray(dismissed[date])&&dismissed[date].includes(item.id)));
       const confirm=(id)=>setDismissed(prev=>{const next={...prev,[date]:[...new Set([...(prev[date]||[]),id])]};Object.keys(next).sort().slice(0,-7).forEach(key=>delete next[key]);try{safeLocalStorage.setItem('pickling-screen-reminders-v1',JSON.stringify(next));}catch{}return next;});
+      // 새 안내가 생기면 펼쳐서 보여 주고, 20초 뒤 작은 '치이카와 안내' 버튼으로 접혀서 시계 카드를 가리지 않아요.
+      const shownKey=shown.map(item=>item.id).join('|');
+      useEffect(()=>{if(shownKey&&window.innerWidth>1000)setCollapsed(false);},[shownKey]);
+      useEffect(()=>{if(collapsed||!shownKey)return;const timer=setTimeout(()=>setCollapsed(true),20000);return ()=>clearTimeout(timer);},[collapsed,shownKey]);
       if(!shown.length)return null;
       return <aside className="pk-mascot-reminder" data-collapsed={collapsed} aria-label="치이카와의 오늘 안내"><button className="pk-reminder-toggle" onClick={()=>setCollapsed(!collapsed)} aria-expanded={!collapsed}>{collapsed?`치이카와 안내 ${shown.length}`:'안내 접기'}</button><img src="assets/classroom-mascots/cheering-v1.png" alt="춤추며 알려주는 치이카와"/><div className="pk-speech"><b>선생님, 잊지 마세요 ♡</b><div aria-live="polite">{shown.map(item=><div className="pk-reminder-item" key={item.id}><p>{item.text}</p><button onClick={()=>confirm(item.id)}>확인했어요</button></div>)}</div></div></aside>;
     };
@@ -7994,10 +8000,10 @@ window.OI_ASSETS = {
         const cardH = Math.floor((availableH - gapY) / 2);
 
         return [
-          { id: 'timetable', title: '오이반 시간표 ⏰', icon: 'fa-solid fa-table-cells', x: marginX, y: topOffset, width: cardW, height: cardH, zIndex: 1, isFixed: true, isMinimized: false, data: {} },
+          { id: 'timetable', title: '오이반 시간표 ⏰', icon: 'fa-solid fa-table-cells', x: marginX, y: topOffset, width: cardW, height: cardH * 2 + gapY, zIndex: 1, isFixed: true, isMinimized: false, data: {} },
           { id: 'lunch', title: '오늘의 영양급식 🍱', icon: 'fa-solid fa-utensils', x: marginX + cardW + gapX, y: topOffset, width: cardW, height: cardH, zIndex: 2, isFixed: true, isMinimized: false, data: {} },
           // 오늘의 당번은 기본 화면에서 뺐고, 자주 가는 사이트는 아래 막대 버튼으로 열어요. 그 자리에 피클링 카드가 들어가요.
-          { id: 'pickling', title: '피클링 🥒', icon: 'fa-solid fa-seedling', x: marginX, y: topOffset + cardH + gapY, width: cardW * 2 + gapX, height: cardH, zIndex: 3, isFixed: true, isMinimized: false, data: {} }
+          { id: 'pickling', title: '피클링 🥒', icon: 'fa-solid fa-seedling', x: marginX + cardW + gapX, y: topOffset + cardH + gapY, width: cardW, height: cardH, zIndex: 3, isFixed: true, isMinimized: false, data: {} }
         ];
       };
 
@@ -8097,9 +8103,9 @@ window.OI_ASSETS = {
         setWidgets(prev => {
           const selections = overrideSelections !== null ? overrideSelections : prev.filter(w => !w.isFixed);
           const fixedOnes = [
-            { id: 'timetable', title: '오이반 시간표 ⏰', icon: 'fa-solid fa-table-cells', x: marginX, y: topOffset, width: cardW, height: cardH, zIndex: 1, isFixed: true, isMinimized: false, data: {} },
+            { id: 'timetable', title: '오이반 시간표 ⏰', icon: 'fa-solid fa-table-cells', x: marginX, y: topOffset, width: cardW, height: cardH * 2 + gapY, zIndex: 1, isFixed: true, isMinimized: false, data: {} },
             { id: 'lunch', title: '오늘의 영양급식 🍱', icon: 'fa-solid fa-utensils', x: marginX + cardW + gapX, y: topOffset, width: cardW, height: cardH, zIndex: 2, isFixed: true, isMinimized: false, data: {} },
-            { id: 'pickling', title: '피클링 🥒', icon: 'fa-solid fa-seedling', x: marginX, y: topOffset + cardH + gapY, width: cardW * 2 + gapX, height: cardH, zIndex: 3, isFixed: true, isMinimized: false, data: {} }
+            { id: 'pickling', title: '피클링 🥒', icon: 'fa-solid fa-seedling', x: marginX + cardW + gapX, y: topOffset + cardH + gapY, width: cardW, height: cardH, zIndex: 3, isFixed: true, isMinimized: false, data: {} }
           ];
           // 당번은 기본 화면에서 빠졌어요. 예전에 띄운 고정 당번·사이트 카드나 따로 연 피클링 카드는 겹치지 않게 정리해요.
           return [...fixedOnes, ...selections.filter(w => !['timetable', 'lunch', 'pickling', 'board'].includes(w.id))];
@@ -8327,7 +8333,7 @@ window.OI_ASSETS = {
       const handleSetClockTimerSeconds = (sec) => { setClockTimerSeconds(typeof sec === 'function' ? sec(clockTimerSeconds) : sec); };
 
       return (
-        <div className={`w-full h-full relative transition-all duration-500 overflow-hidden ${bgStyle.cssClass}`}>
+        <div data-theme={bgStyle.id} className={`w-full h-full relative transition-all duration-500 overflow-hidden ${bgStyle.cssClass}`}>
           {!isPseudoFullscreen && (
             <div className="absolute top-3 left-4 z-[4000] pointer-events-none select-none flex items-center gap-2 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-2xl border-[3px] border-emerald-200 shadow-[4px_4px_0px_#bbf7d0]">
               <div className="h-8 shrink-0 flex items-center justify-center oi-bob">

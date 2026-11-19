@@ -1,0 +1,118 @@
+/* 테마별 색감 · 아래 도구 버튼 톤 · 칠판 가독성
+   52class.html이 화면 맨 바깥 상자에 data-theme="테마 id"를 붙여요.
+   pickling-look.css의 색 변수(--pk-*)를 테마마다 바꾸므로, 카드 테두리·제목·버튼이 한꺼번에 그 테마 색이 돼요.
+   도구 버튼은 한 가지 색이 아니라 테마 계열 안에서 여섯 가지 톤을 돌아가며 써요.
+   이 파일만 빼면 예전 모습으로 돌아가요. */
+
+/* ---------- 테마 팔레트: 팬톤 컬러 기준 ----------
+   각 테마는 팬톤(PANTONE TCX) 색 여섯 개를 기준으로 해요. 버튼 바탕은 그 색을 흰색에 섞은 연한 톤,
+   테두리는 조금 덜 섞은 톤, 글씨·아이콘은 같은 색을 어둡게 해서 바탕 위에서 4.5:1 이상 또렷하게 읽히게 했어요.
+   (화면 색은 팬톤 공식 sRGB 근사값이에요.) */
+#root [data-theme] {
+  /* 오이랜드: Greenery 15-0343 · Kale 18-0107 · Lime Punch 13-0550 · Emerald 17-5641 · Turquoise 15-5519 · Mimosa 14-0848 */
+  --pk-ink: #313e26; --pk-soft: #445635; --pk-title: #415233; --pk-green: #5e7934; --pk-line: #d9e6c5; --pk-card: #fbfdfa; --pk-tint: #f3f7ed; --pk-tint-2: #e7efdb; --pk-soft-accent: #668438; --pk-bg: radial-gradient(ellipse at 10% 0%, #e5eed7 0, transparent 55%), radial-gradient(ellipse at 90% 100%, #fcf2dc 0, transparent 50%), #f7f9f2;
+  --t1: #e7efdb; --t1-line: #c4d8a5; --t1-ink: #566f2f; /* Greenery 15-0343 #88B04B */
+  --t2: #dee3da; --t2-line: #adb9a3; --t2-ink: #445635; /* Kale 18-0107 #5A7247 */
+  --t3: #f2f7d3; --t3-line: #e0eb92; --t3-ink: #687414; /* Lime Punch 13-0550 #C0D725 */
+  --t4: #ccebe4; --t4-line: #80cdbb; --t4-ink: #007056; /* Emerald 17-5641 #009B77 */
+  --t5: #daf1ee; --t5-line: #a2dcd6; --t5-ink: #2b746c; /* Turquoise 15-5519 #45B8AC */
+  --t6: #fcf2dc; --t6-line: #f7e0a8; --t6-ink: #81682b; /* Mimosa 14-0848 #EFC050 */
+}
+#root [data-theme="greenboard"] {
+  /* 민트 소다: Aqua Sky 14-4811 · Turquoise 15-5519 · Emerald 17-5641 · Blue Turquoise 15-5217 · Greenery 15-0343 · Cerulean 15-4020 */
+  --pk-ink: #004132; --pk-soft: #006b52; --pk-title: #005d47; --pk-green: #307f77; --pk-line: #d6efef; --pk-card: #fbfefe; --pk-tint: #f2fafa; --pk-tint-2: #e5f5f5; --pk-soft-accent: #348a81; --pk-bg: radial-gradient(ellipse at 10% 0%, #e3f4f4 0, transparent 55%), radial-gradient(ellipse at 90% 100%, #eaf0f6 0, transparent 50%), #f6fcfc;
+  --t1: #e5f5f5; --t1-line: #bfe6e6; --t1-ink: #456f6f; /* Aqua Sky 14-4811 #7FCDCD */
+  --t2: #daf1ee; --t2-line: #a2dcd6; --t2-ink: #2b746c; /* Turquoise 15-5519 #45B8AC */
+  --t3: #ccebe4; --t3-line: #80cdbb; --t3-ink: #007056; /* Emerald 17-5641 #009B77 */
+  --t4: #ddf0ef; --t4-line: #aadad8; --t4-ink: #36716f; /* Blue Turquoise 15-5217 #55B4B0 */
+  --t5: #e7efdb; --t5-line: #c4d8a5; --t5-ink: #566f2f; /* Greenery 15-0343 #88B04B */
+  --t6: #eaf0f6; --t6-line: #ccdaea; --t6-ink: #5b6c7f; /* Cerulean 15-4020 #98B4D4 */
+}
+#root [data-theme="pastel-cloud"] {
+  /* 노랑 병아리구름: Illuminating 13-0647 · Mimosa 14-0848 · Peach Fuzz 13-1023 · Primrose Yellow 13-0755 · Lime Punch 13-0550 · Sand Dollar 13-1106 */
+  --pk-ink: #413416; --pk-soft: #735c26; --pk-title: #645122; --pk-green: #886d2e; --pk-line: #fcf5c6; --pk-card: #fffefa; --pk-tint: #fefced; --pk-tint-2: #fdf9db; --pk-soft-accent: #ac8a3a; --pk-bg: radial-gradient(ellipse at 10% 0%, #fdf8d8 0, transparent 55%), radial-gradient(ellipse at 90% 100%, #fff2ea 0, transparent 50%), #fefdf3;
+  --t1: #fdf9db; --t1-line: #faefa6; --t1-ink: #766b25; /* Illuminating 13-0647 #F5DF4D */
+  --t2: #fcf2dc; --t2-line: #f7e0a8; --t2-ink: #81682b; /* Mimosa 14-0848 #EFC050 */
+  --t3: #fff2ea; --t3-line: #ffdfcc; --t3-ink: #8a6752; /* Peach Fuzz 13-1023 #FFBE98 */
+  --t4: #fdf6dd; --t4-line: #fbe8aa; --t4-ink: #7d6b2b; /* Primrose Yellow 13-0755 #F6D155 */
+  --t5: #f2f7d3; --t5-line: #e0eb92; --t5-ink: #687414; /* Lime Punch 13-0550 #C0D725 */
+  --t6: #f9f5f2; --t6-line: #efe7df; --t6-ink: #726a61; /* Sand Dollar 13-1106 #DFCFBE */
+}
+#root [data-theme="sky-balloon"] {
+  /* 뭉게뭉게 하늘: Serenity 15-3919 · Cerulean 15-4020 · Aqua Sky 14-4811 · Very Peri 17-3938 · Blue Iris 18-3943 · Classic Blue 19-4052 */
+  --pk-ink: #0b3961; --pk-soft: #0b3961; --pk-title: #0b3961; --pk-green: #657490; --pk-line: #dce3f0; --pk-card: #fcfcfe; --pk-tint: #f4f6fa; --pk-tint-2: #e9eef6; --pk-soft-accent: #6e7e9d; --pk-bg: radial-gradient(ellipse at 10% 0%, #e7ecf5 0, transparent 55%), radial-gradient(ellipse at 90% 100%, #e5f5f5 0, transparent 50%), #f7f9fc;
+  --t1: #e9eef6; --t1-line: #c9d4e8; --t1-ink: #5c6a84; /* Serenity 15-3919 #92A8D1 */
+  --t2: #eaf0f6; --t2-line: #ccdaea; --t2-ink: #5b6c7f; /* Cerulean 15-4020 #98B4D4 */
+  --t3: #e5f5f5; --t3-line: #bfe6e6; --t3-ink: #456f6f; /* Aqua Sky 14-4811 #7FCDCD */
+  --t4: #e0e1ee; --t4-line: #b3b3d5; --t4-ink: #4d4d80; /* Very Peri 17-3938 #6667AB */
+  --t5: #dedfed; --t5-line: #adafd3; --t5-ink: #44477d; /* Blue Iris 18-3943 #5B5EA6 */
+  --t6: #cfdbe6; --t6-line: #87a6c0; --t6-ink: #0b3961; /* Classic Blue 19-4052 #0F4C81 */
+}
+#root [data-theme="wood-cozy"] {
+  /* 몽실 크림: Mocha Mousse 17-1230 · Sand Dollar 13-1106 · Hazelnut 13-1018 · Peach Fuzz 13-1023 · Marsala 18-1438 · Mimosa 14-0848 */
+  --pk-ink: #4a362d; --pk-soft: #765648; --pk-title: #674c3f; --pk-green: #7b5a4b; --pk-line: #f5f0ea; --pk-card: #fefefd; --pk-tint: #fcfaf9; --pk-tint-2: #f9f5f2; --pk-soft-accent: #7b5a4b; --pk-bg: radial-gradient(ellipse at 10% 0%, #f8f4f1 0, transparent 55%), radial-gradient(ellipse at 90% 100%, #fff2ea 0, transparent 50%), #fdfcfa;
+  --t1: #ede4e0; --t1-line: #d2bcb2; --t1-ink: #7b5a4b; /* Mocha Mousse 17-1230 #A47864 */
+  --t2: #f9f5f2; --t2-line: #efe7df; --t2-ink: #726a61; /* Sand Dollar 13-1106 #DFCFBE */
+  --t3: #f5efea; --t3-line: #e7d8ca; --t3-ink: #766455; /* Hazelnut 13-1018 #CFB095 */
+  --t4: #fff2ea; --t4-line: #ffdfcc; --t4-ink: #8a6752; /* Peach Fuzz 13-1023 #FFBE98 */
+  --t5: #eadcdc; --t5-line: #caa9a8; --t5-ink: #703e3d; /* Marsala 18-1438 #955251 */
+  --t6: #fcf2dc; --t6-line: #f7e0a8; --t6-ink: #81682b; /* Mimosa 14-0848 #EFC050 */
+}
+#root [data-theme="pink-blossom"] {
+  /* 몽글몽글 벚꽃: Rose Quartz 13-1520 · Peach Fuzz 13-1023 · Honeysuckle 18-2120 · Radiant Orchid 18-3224 · Living Coral 16-1546 · Viva Magenta 18-1750 */
+  --pk-ink: #70172c; --pk-soft: #8c1d37; --pk-title: #8c1d37; --pk-green: #a13c59; --pk-line: #fceeee; --pk-card: #fffdfd; --pk-tint: #fefafa; --pk-tint-2: #fdf4f4; --pk-soft-accent: #a13c59; --pk-bg: radial-gradient(ellipse at 10% 0%, #fdf3f3 0, transparent 55%), radial-gradient(ellipse at 90% 100%, #fff2ea 0, transparent 50%), #fefbfb;
+  --t1: #fdf4f4; --t1-line: #fbe5e4; --t1-ink: #7e6767; /* Rose Quartz 13-1520 #F7CAC9 */
+  --t2: #fff2ea; --t2-line: #ffdfcc; --t2-ink: #8a6752; /* Peach Fuzz 13-1023 #FFBE98 */
+  --t3: #f7dce4; --t3-line: #eba8bb; --t3-ink: #a13c59; /* Honeysuckle 18-2120 #D65076 */
+  --t4: #efe0ed; --t4-line: #d8b1d1; --t4-ink: #854a7a; /* Radiant Orchid 18-3224 #B163A3 */
+  --t5: #ffe2df; --t5-line: #ffb7b0; --t5-ink: #a84940; /* Living Coral 16-1546 #FF6F61 */
+  --t6: #f1d4db; --t6-line: #dd93a4; --t6-ink: #8c1d37; /* Viva Magenta 18-1750 #BB2649 */
+}
+
+/* 배경도 테마 색으로 (pickling-look.css가 일부 테마를 크림색으로 고정하던 것을 테마별로) */
+#root > div[data-theme] { background: var(--pk-bg) !important; }
+#root [data-theme] footer { border-color: var(--pk-line) !important; background: var(--pk-card) !important; }
+#root [data-theme] footer > div:first-child { border-color: var(--pk-line) !important; }
+
+/* ---------- 아래 도구 버튼: 테마 계열 여섯 톤을 돌아가며 ---------- */
+#root [data-theme] footer > div:nth-of-type(2) > button {
+  width: 62px !important; height: 58px !important;
+  background-color: var(--tone) !important; border-color: var(--tone-line) !important; color: var(--tone-ink) !important;
+  box-shadow: 0 3px 0 var(--tone-line) !important;
+}
+#root [data-theme] footer > div:nth-of-type(2) > button:nth-child(6n+1) { --tone: var(--t1); --tone-line: var(--t1-line); --tone-ink: var(--t1-ink); }
+#root [data-theme] footer > div:nth-of-type(2) > button:nth-child(6n+2) { --tone: var(--t2); --tone-line: var(--t2-line); --tone-ink: var(--t2-ink); }
+#root [data-theme] footer > div:nth-of-type(2) > button:nth-child(6n+3) { --tone: var(--t3); --tone-line: var(--t3-line); --tone-ink: var(--t3-ink); }
+#root [data-theme] footer > div:nth-of-type(2) > button:nth-child(6n+4) { --tone: var(--t4); --tone-line: var(--t4-line); --tone-ink: var(--t4-ink); }
+#root [data-theme] footer > div:nth-of-type(2) > button:nth-child(6n+5) { --tone: var(--t5); --tone-line: var(--t5-line); --tone-ink: var(--t5-ink); }
+#root [data-theme] footer > div:nth-of-type(2) > button:nth-child(6n+6) { --tone: var(--t6); --tone-line: var(--t6-line); --tone-ink: var(--t6-ink); }
+#root [data-theme] footer > div:nth-of-type(2) > button :is(i, span) { color: inherit !important; }
+#root [data-theme] footer > div:nth-of-type(2) > button:hover { filter: saturate(1.15) brightness(.98); }
+#root [data-theme] footer > div:nth-of-type(2) > button:active { box-shadow: none !important; }
+
+/* ---------- 칠판 뒤에서도 읽히는 글씨 ---------- */
+#root [data-theme] footer > div > button span { font-size: 12px !important; line-height: 1.25; white-space: nowrap; letter-spacing: -.02em; }
+#root [data-theme] footer > div:nth-of-type(2) > button span { font-size: 12.5px !important; letter-spacing: -.04em; }
+#root [data-theme] footer > div:nth-of-type(2) > button i { font-size: 19px !important; }
+/* 오른쪽 선생님 설정 버튼 이름 */
+#root [data-theme] > aside:not(.pk-mascot-reminder) > button span { font-size: 13px !important; letter-spacing: -.02em; white-space: nowrap; }
+
+/* 가운데 시계 카드: 날짜·인사·이번 주 영어 단어 등 작은 글씨를 크게 (카드는 내용에 맞춰 스스로 크기를 맞춰요) */
+#root [data-theme] [class~="oi-hero-in"][class~="h-full"] [class~="text-xs"] { font-size: 16px !important; }
+#root [data-theme] [class~="oi-hero-in"][class~="h-full"] [class~="text-sm"] { font-size: 19px !important; }
+#root [data-theme] [class~="oi-hero-in"][class~="h-full"] [class~="text-base"] { font-size: 21px !important; }
+/* 연해서 잘 안 보이던 초(:08)와 단어 뜻을 조금 진하게 */
+#root [data-theme] [class~="oi-hero-in"][class~="h-full"] [class~="text-emerald-300"] { color: var(--pk-soft-accent) !important; }
+#root [data-theme] [class~="oi-hero-in"][class~="h-full"] [class~="text-stone-500"] { color: var(--pk-soft) !important; }
+
+/* 오른쪽 선생님 설정 버튼: 바탕은 그대로 두고 아이콘·이름 색만 테마 톤으로 */
+#root [data-theme] > aside:not(.pk-mascot-reminder) > button:nth-child(6n+1) { --tone-ink: var(--t1-ink); }
+#root [data-theme] > aside:not(.pk-mascot-reminder) > button:nth-child(6n+2) { --tone-ink: var(--t2-ink); }
+#root [data-theme] > aside:not(.pk-mascot-reminder) > button:nth-child(6n+3) { --tone-ink: var(--t3-ink); }
+#root [data-theme] > aside:not(.pk-mascot-reminder) > button:nth-child(6n+4) { --tone-ink: var(--t4-ink); }
+#root [data-theme] > aside:not(.pk-mascot-reminder) > button:nth-child(6n+5) { --tone-ink: var(--t5-ink); }
+#root [data-theme] > aside:not(.pk-mascot-reminder) > button:nth-child(6n+6) { --tone-ink: var(--t6-ink); }
+#root [data-theme] > aside:not(.pk-mascot-reminder) > button :is(i, span) { color: var(--tone-ink) !important; }
+#root [data-theme] > aside:not(.pk-mascot-reminder) > button { border-color: var(--pk-line) !important; }
+/* 진한 강조 버튼(한 주 보기·자동 연동 등)도 테마 색으로 */
+#root [data-theme] [class~="bg-emerald-500"], #root [data-theme] [class~="bg-emerald-600"] { background-color: var(--pk-green) !important; }
