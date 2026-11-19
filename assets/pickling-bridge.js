@@ -1,7 +1,7 @@
 (function(root){'use strict';
 const normalized=name=>String(name||'').replace(/^\s*\d+\s*[.번)\-:]?\s*/,'').trim();
 function create({getFrame,origin,onStatus,onTemp,onMemo,onDisconnect}){
- let ready=false,lastTemp=null,pendingLife=null,words=null,sentWords=null,wordTimer=0;const requests=new Map(),memoRequests=new Map();
+ let ready=false,lastTemp=null,pendingLife=null,theme=null,words=null,sentWords=null,wordTimer=0;const requests=new Map(),memoRequests=new Map();
  const validMemo=memo=>memo&&typeof memo.text==='string'&&memo.text.length<=1500&&Number.isSafeInteger(memo.revision)&&memo.revision>=0&&(memo.date===''||/^\d{4}-\d{2}-\d{2}$/.test(memo.date));
  // 이번 주 영어 단어 → 피클링 영어단어 익히기: sent once the card is connected and again whenever the list changes.
  const sendWords=()=>{if(ready&&typeof words==='string'&&words!==sentWords&&post({type:'board-words',text:words}))sentWords=words;};
@@ -19,10 +19,11 @@ function create({getFrame,origin,onStatus,onTemp,onMemo,onDisconnect}){
   const warnings=msg.warnings.filter(r=>Number.isInteger(r.number)&&r.number>=1&&r.number<=18&&typeof r.name==='string'&&r.name.length<=40&&Number.isInteger(r.count)&&r.count>=0);
   ready=true;onStatus({date:msg.date,books:msg.books,booksMore:!!msg.booksMore,letters:msg.letters,suggestions:Number.isSafeInteger(msg.suggestions)&&msg.suggestions>=0?msg.suggestions:0,reasons:Array.isArray(msg.reasons)?msg.reasons.filter(r=>typeof r.id==='string'&&typeof r.label==='string'):[],warnings});
   if(pendingLife){post(pendingLife);pendingLife=null;}
-  sendWords();
+  sendWords();if(theme)post({type:'board-theme',id:theme});
  }
  root.addEventListener('message',message);
  return {temp(value){if(ready&&value!==lastTemp&&Number.isInteger(value)&&value>=0&&value<=100){lastTemp=value;post({type:'board-temp',value});}},
+  theme(id){if(!['cucumber-land','pastel-cloud','sky-balloon','wood-cozy','greenboard','pink-blossom','winter-snow'].includes(id))return;theme=id;if(ready)post({type:'board-theme',id});},
   openHome(){const data={type:'board-home'};if(!ready||!post(data))pendingLife=data;},
   saveMemo(fields){return new Promise(resolve=>{if(!ready){resolve({ok:false,message:'피클링 카드에 먼저 교사 계정으로 로그인해 주세요.'});return;}const id=root.crypto.randomUUID();const timer=root.setTimeout(()=>{memoRequests.delete(id);resolve({ok:false,message:'저장 확인이 늦어요. 같은 내용으로 다시 눌러 주세요.'});},15000);memoRequests.set(id,result=>{root.clearTimeout(timer);resolve(result);});if(!post({...fields,type:'board-memo-save',id})){root.clearTimeout(timer);memoRequests.delete(id);resolve({ok:false,message:'피클링 카드를 열어 주세요.'});}});},
   openSuggestions(){if(ready)post({type:'board-suggestions-open'});},

@@ -6390,12 +6390,16 @@ body {
   </style>
   <!-- 피클링과 같은 디자인 (글꼴·색·모양) + 치이카와 친구들 -->
   <link rel="stylesheet" href="pickling-look.css?v=20261117-2">
-  <script src="assets/pickling-bridge.js?v=20261119-hub"></script>
+  <script src="assets/pickling-bridge.js?v=20261119-winter"></script>
   <script src="assets/classroom-tools.js?v=20261119-hub"></script>
-  <link rel="stylesheet" href="assets/classroom-tools.css?v=20261119-draw">
+  <script src="assets/classroom-palette.js?v=20261119-winter"></script>
+  <link rel="stylesheet" href="assets/classroom-tools.css?v=20261119-cozy">
   <!-- 테마별 색감·버튼 톤·칠판 가독성 (data-theme 기준) -->
   <link rel="stylesheet" href="assets/classroom-themes.css?v=20261119-pantone">
+  <link rel="stylesheet" href="assets/classroom-winter.css?v=20261119-winter">
   <script src="assets/mascot-reminders.js?v=20261117-2"></script>
+<script src="assets/classroom-lunch.js?v=20261119-lunch"></script>
+<link rel="stylesheet" href="assets/classroom-lunch.css?v=20261119-lunch">
 </head>
 <body class="w-screen h-screen relative bg-slate-100 overflow-hidden">
 
@@ -6551,6 +6555,7 @@ window.OI_ASSETS = {
       { id: 'sky-balloon', name: '뭉게뭉게 하늘 🩵', cssClass: 'bg-gradient-to-b from-[#f2fbff] via-[#e6f6ff] to-[#d3ecfd]', textColor: 'text-sky-700' },
       { id: 'wood-cozy', name: '몽실 크림 🤎', cssClass: 'bg-gradient-to-br from-[#fffdfb] via-[#faf6f0] to-[#f0e9df]', textColor: 'text-stone-600' },
       { id: 'greenboard', name: '민트 소다 🟢', cssClass: 'bg-gradient-to-b from-[#ccfbef] via-[#b8f5e4] to-[#a7f0d8]', textColor: 'text-emerald-800' },
+      { id: 'winter-snow', name: '눈 내리는 겨울 ❄️', cssClass: 'pk-winter-background', textColor: 'text-sky-700' },
       { id: 'pink-blossom', name: '몽글몽글 벚꽃 🩷', cssClass: 'bg-gradient-to-tr from-[#fff7f9] via-[#ffeef3] to-[#fde0e9]', textColor: 'text-rose-600' }
     ];
 
@@ -6663,7 +6668,7 @@ window.OI_ASSETS = {
     };
 
     const TimetableWidget = ({ table, onUpdateTable, width, height }) => {
-      const [viewMode, setViewMode] = useState('week');
+      const [viewMode, setViewMode] = useState('day');
       const [selectedDay, setSelectedDay] = useState('mon');
 
       useEffect(() => {
@@ -6788,6 +6793,19 @@ window.OI_ASSETS = {
       const scale = Math.max(0.6, Math.min(width / 340, height / 340, 2.2));
 
       useEffect(() => { fetchLunchData(schoolInfo); }, []);
+      const menuBox = useRef(null);
+      const [isEditing, setIsEditing] = useState(false);
+      const baseFont = Math.max(16, Math.round(18 * scale));
+      const shownLunch = window.PicklingLunchLayout.clean(lunch);
+      const menuLines = window.PicklingLunchLayout.lines(shownLunch);
+      useEffect(() => {
+        const el=menuBox.current;if(!el||isSearching||isEditing)return;
+        let active=true,frame=0;
+        const schedule=()=>{if(!active)return;cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{if(active)window.PicklingLunchLayout.fit(el,baseFont);});};
+        schedule();const observer=window.ResizeObserver?new ResizeObserver(schedule):null;observer?.observe(el);
+        document.fonts?.ready.then(schedule).catch(()=>{});
+        return ()=>{active=false;cancelAnimationFrame(frame);observer?.disconnect();};
+      }, [shownLunch, baseFont, width, height, isSearching, isEditing]);
 
       const fetchLunchData = async (info) => {
         if (!info) return;
@@ -6810,8 +6828,9 @@ window.OI_ASSETS = {
             const items = meal.split(/<br\s*\/?>/i).map(s => s.replace(/[*#]/g, '').trim()).filter(s => s);
             const mm = String(parseInt(pick.MLSV_YMD.slice(4, 6), 10));
             const dd = String(parseInt(pick.MLSV_YMD.slice(6, 8), 10));
-            const head = isToday ? `오늘의 식단 (${mm}/${dd})` : `오늘 급식은 없어요! 🥲\n다음 급식 (${mm}/${dd})`;
-            onUpdateLunch(head + `\n\n` + items.map(m => `- ${m}`).join('\n'));
+            // 오늘 식단은 제목 줄 없이 메뉴만 보여요. 오늘 급식이 없을 때만 다음 급식 날짜를 알려 줘요.
+            const head = isToday ? '' : `오늘 급식은 없어요! 🥲\n다음 급식 (${mm}/${dd})\n\n`;
+            onUpdateLunch(head + items.map(m => `- ${m}`).join('\n'));
             playSound(isToday ? 'fanfare' : 'pop');
           } else {
             onUpdateLunch(`앞으로 열흘간 급식 정보가 없어요! 🥲\n(방학이거나 아직 나이스에 등록 전일 수 있어요)`);
@@ -6856,8 +6875,8 @@ window.OI_ASSETS = {
       };
 
       return (
-        <div className="w-full h-full flex flex-col no-drag relative">
-          <div className="flex justify-between items-center mb-2 shrink-0">
+        <div className="pk-lunch-widget w-full h-full flex flex-col no-drag relative">
+          <div className="pk-lunch-toolbar flex justify-between items-center mb-2 shrink-0">
             {schoolInfo ? (
               <button onClick={() => setIsSearching(true)} className="text-[11px] font-bold text-emerald-800 truncate mr-2 px-3 py-1.5 bg-emerald-100 hover:bg-emerald-200 rounded-xl border-2 border-emerald-300 transition shadow-[2px_2px_0px_#a7f3d0] text-left max-w-[140px]" title="클릭하여 학교 변경">
                 🏫 {schoolInfo.name}
@@ -6865,13 +6884,13 @@ window.OI_ASSETS = {
             ) : (
               <span className="text-[11px] font-bold text-stone-500 px-1">학교를 먼저 검색해주세요 👉</span>
             )}
-            <button onClick={() => {
+            <div className="pk-lunch-controls"><button type="button" className="pk-lunch-edit-toggle" aria-pressed={isEditing} onClick={()=>setIsEditing(value=>!value)}>{isEditing?'메뉴 보기':'수정'}</button><button onClick={() => {
               if (!schoolInfo) setIsSearching(true);
               else fetchLunchData(schoolInfo);
               playSound('pop');
-            }} disabled={loading} className="text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl transition shadow-[0_4px_0_#047857] active:translate-y-[4px] active:shadow-none disabled:opacity-50 disabled:translate-y-0 shrink-0">
-              {loading ? '불러오는 중...' : '자동 연동 ✨'}
-            </button>
+            }} disabled={loading} className="pk-lunch-reload text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl transition shadow-[0_4px_0_#047857] active:translate-y-[4px] active:shadow-none disabled:opacity-50 disabled:translate-y-0 shrink-0">
+              {loading ? '불러오는 중' : '자동 연동'}
+            </button></div>
           </div>
 
           {isSearching ? (
@@ -6895,9 +6914,9 @@ window.OI_ASSETS = {
                  ))}
                </div>
              </div>
-          ) : (
-            <textarea value={lunch} onChange={(e) => onUpdateLunch(e.target.value)} placeholder="오늘의 급식 메뉴를 입력하세요..." style={{ fontSize: `${18 * scale}px`, lineHeight: '1.6' }} className="flex-1 w-full bg-amber-50/50 border-[4px] border-emerald-200 focus:border-emerald-200 rounded-2xl p-4 font-cute font-black text-stone-800 outline-none resize-none allow-select shadow-inner transition-colors" />
-          )}
+          ) : isEditing ? (
+            <textarea value={shownLunch} onChange={(e) => onUpdateLunch(e.target.value)} placeholder="오늘의 급식 메뉴를 입력하세요..." style={{ fontSize: `${baseFont}px`, lineHeight: '1.5' }} aria-label="급식 메뉴 수정" className="pk-lunch-editor flex-1 w-full min-h-0 bg-amber-50/50 border-[4px] border-emerald-200 focus:border-emerald-200 rounded-2xl p-4 font-cute font-black text-stone-800 outline-none resize-none allow-select shadow-inner transition-colors" />
+          ) : (<ul ref={menuBox} className="pk-lunch-menu allow-select" aria-label="급식 메뉴 전체">{(menuLines.length?menuLines:['자동 연동으로 급식을 불러오거나 수정 버튼으로 메뉴를 적어 주세요.']).map((line,index)=><li key={index}>{line}</li>)}</ul>)}
         </div>
       );
     };
@@ -7488,17 +7507,21 @@ window.OI_ASSETS = {
       );
     };
 
-    const MusicWidget = () => {
+    const MusicWidget = ({width=500,height=460}) => {
       const [query,setQuery]=useState(''),[link,setLink]=useState(''),[video,setVideo]=useState(null),[error,setError]=useState('');
+      const [djMotion,setDjMotion]=useState(true);
+      const compactDJ=width<420||height<520;
       const presets=[['fjX7Y3DKzAA','댄스타임'],['mWASFFB8YFY','명상'],['D54StAZFUrc','체조']];
       const search=event=>{event.preventDefault();const url=window.PicklingClassroomTools.searchUrl(query);if(url)window.open(url,'_blank','noopener,noreferrer');};
       const playLink=event=>{event.preventDefault();const id=window.PicklingClassroomTools.videoId(link);if(!id){setError('유튜브 영상 주소를 확인해 주세요.');return;}setError('');setVideo({id,label:'DJ가 고른 음악'});};
-      return <div className="pk-music-widget no-drag">
+      return <div className="pk-music-widget no-drag" data-compact-dj={compactDJ}>
         <form onSubmit={search} className="pk-music-search"><label htmlFor="classroom-music-search">DJ의 유튜브 검색</label><div><input id="classroom-music-search" value={query} onChange={e=>setQuery(e.target.value)} maxLength="120" required placeholder="노래 제목 · 가수"/><button type="submit">검색 ♪</button></div></form>
         <p className="pk-music-help">검색 결과는 유튜브에서 열려요. <b>Inxunhaal</b> 계정으로 로그인한 브라우저를 사용해요. <a href="https://www.youtube.com/account" target="_blank" rel="noopener noreferrer">계정 확인 ↗</a></p>
         <details className="pk-music-link"><summary>영상 주소로 교실에서 재생하기</summary><form onSubmit={playLink}><input aria-label="유튜브 영상 주소" value={link} onChange={e=>setLink(e.target.value)} placeholder="유튜브 영상 주소 붙여넣기"/><button type="submit">재생</button></form><p role="status">{error}</p></details>
         <label className="pk-music-preset">바로 재생<select aria-label="바로 재생" value={video?.id||''} onChange={e=>{const preset=presets.find(p=>p[0]===e.target.value);setVideo(preset?{id:preset[0],label:preset[1]}:null);}}><option value="">음악을 골라 주세요</option>{presets.map(([id,label])=><option key={id} value={id}>{label}</option>)}</select></label>
-        <div className="pk-music-player">{video?<iframe src={'https://www.youtube.com/embed/'+video.id+'?rel=0'} title={video.label} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen/>:<div><img src="assets/classroom-mascots/cheering-v1.png" alt="노래를 기다리는 치이카와"/><p>DJ가 들려줄 노래를 기다려요 ♪</p></div>}</div>
+        <div className="pk-music-stage"><div className="pk-music-player">{video?<iframe src={'https://www.youtube.com/embed/'+video.id+'?rel=0'} title={video.label} allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowFullScreen/>:<div><p>노래를 골라 함께 들어요 ♪</p></div>}</div>
+          <aside className="pk-dj-booth" aria-label="DJ 치이카와" data-motion={djMotion}><b>DJ 치이카와 ♪</b><div className="pk-dj-sprite" role="img" aria-label="오이 헤드폰을 쓰고 춤추며 믹싱하는 치이카와"/><span className="pk-dj-notes" aria-hidden="true">♪ ♫ ♪</span><button type="button" className="pk-dj-motion" aria-label="DJ 치이카와 움직임" aria-pressed={djMotion} onClick={()=>setDjMotion(value=>!value)}>{djMotion?'움직임 끄기':'움직임 켜기'}</button></aside>
+        </div>
       </div>;
     };
 
@@ -7633,47 +7656,15 @@ window.OI_ASSETS = {
 
     const OI = (typeof window !== 'undefined' && window.OI_ASSETS) || {};
 
-    const MascotBubble = ({ src, size = 130, floatClass = 'oi-float', label }) => (
-      <div className="flex flex-col items-center gap-1">
-        <div className={floatClass} style={{ width: size, height: size }}>
-          <div className="w-full h-full rounded-full bg-white border-[4px] border-emerald-200 shadow-[0_8px_0_#d1fae5,0_14px_24px_-8px_rgba(52,211,153,0.5)] overflow-hidden flex items-center justify-center">
-            <img src={src} alt={label} className="w-[86%] h-[86%] object-contain" draggable="false" />
-          </div>
-        </div>
-        {label && <span className="font-cute font-black text-emerald-500 text-sm bg-white/80 px-3 py-0.5 rounded-full border-2 border-emerald-100">{label}</span>}
-      </div>
-    );
+    const ClassroomAmbience=({theme,motion})=>{
+      const winter=theme==='winter-snow';
+      const friends=['chiikawa','hachiware','usagi','momonga'];
+      return <><div className="pk-roaming-layer" data-motion={motion} aria-hidden="true"><div className="pk-roamer pk-roamer-oyang"><img src={OI.oyang} alt="" draggable="false"/></div><div className="pk-roamer pk-roamer-oio"><img src={OI.oio} alt="" draggable="false"/></div>{friends.map((id,index)=><div key={id} className={'pk-roamer pk-roamer-friend pk-roamer-'+index}><img src={winter?'assets/winter/'+id+'.png':'assets/chiikawa/'+id+'.png'} alt="" draggable="false"/></div>)}</div>{winter&&<div className="pk-snow-layer" data-motion={motion} aria-hidden="true">{Array.from({length:32},(_,i)=><i key={i} style={{left:((i*37)%100)+'%',width:(3+i%4)+'px',height:(3+i%4)+'px',animationDuration:(12+i%11)+'s',animationDelay:-(i*1.7)+'s','--snow-drift':((i%2?1:-1)*(12+i%25))+'px'}}/>)}</div>}</>;
+    };
 
     const IdleHero = ({ textColor, englishWordsText, birthdaysText, weeklyGoalText, ddayText }) => {
       const [now, setNow] = useState(new Date());
-      const [greetIdx, setGreetIdx] = useState(0);
-      const cardRef = useRef(null);
-      const contentRef = useRef(null);
-      const [heroScale, setHeroScale] = useState(1);
-      useEffect(() => {
-        if (!cardRef.current || !contentRef.current) return;
-        const availH = cardRef.current.clientHeight - 20;
-        const availW = cardRef.current.clientWidth - 16;
-        const needH = contentRef.current.scrollHeight;
-        const needW = contentRef.current.scrollWidth;
-        let s = Math.min(1, availH / Math.max(1, needH), availW / Math.max(1, needW));
-        s = Math.max(0.35, s);
-        setHeroScale(prev => Math.abs(prev - s) < 0.01 ? prev : s);
-      });
-
       useEffect(() => { const t = setInterval(() => setNow(new Date()), 1000); return () => clearInterval(t); }, []);
-
-      const greetings = [
-        "오늘도 반가워요, 오이반! 🥒",
-        "오양이랑 오이오가 응원해요 💚",
-        "오이처럼 쑥쑥 자라는 오이반 🌱",
-        "우리 함께 신나게 배워봐요 ✨",
-        "오이반, 오늘도 파이팅! 💪"
-      ];
-      useEffect(() => {
-        const t = setInterval(() => setGreetIdx(i => (i + 1) % greetings.length), 5000);
-        return () => clearInterval(t);
-      }, []);
 
       const hour = now.getHours();
       const period = hour < 12 ? '좋은 아침이에요' : hour < 17 ? '즐거운 오후예요' : '오늘 하루도 수고했어요';
@@ -7699,15 +7690,10 @@ window.OI_ASSETS = {
 
       return (
         <div className="w-full h-full flex items-center justify-center oi-hero-in p-1">
-          <div ref={cardRef} className="w-full h-full bg-white/80 backdrop-blur-md border-[6px] border-emerald-200 rounded-[36px] widget-shadow px-5 py-3 flex flex-col items-center justify-center overflow-hidden">
-            <div ref={contentRef} style={{ transform: `scale(${heroScale})`, transformOrigin: 'center center' }} className="flex flex-col items-center gap-2 w-full">
-            <div className="flex items-end justify-center gap-4">
-              <MascotBubble src={OI.oyang} size={108} floatClass="oi-float" label="오양" />
-              <MascotBubble src={OI.oio} size={96} floatClass="oi-float2" label="오이오" />
-            </div>
-
-            <div className="bg-emerald-100 border-2 border-emerald-200 rounded-full px-4 py-1 text-emerald-600 font-bold text-sm shadow-sm">
-              {period}, 선생님! 👋
+          <div className="pk-hero-card w-full h-full bg-white/80 backdrop-blur-md border-[6px] border-emerald-200 rounded-[36px] widget-shadow px-5 py-3 flex flex-col items-center justify-center overflow-hidden">
+            <div className="pk-hero-content flex flex-col items-center gap-2 w-full">
+            <div className="pk-hero-greeting bg-emerald-100 border-2 border-emerald-200 rounded-full px-4 py-1 text-emerald-600 font-bold text-sm shadow-sm">
+              {period}, 선생님! 오늘도 함께 배워요 🌱
             </div>
 
             <div className="flex items-end gap-1 font-cute leading-none">
@@ -7719,12 +7705,10 @@ window.OI_ASSETS = {
               📅 {dateStr}
             </div>
 
-            <div key={greetIdx} className="oi-hero-in font-cute font-black text-base text-emerald-500 tracking-wide text-center break-keep">
-              {greetings[greetIdx]}
-            </div>
+
 
             {ddays.length > 0 && (
-              <div className="w-full max-w-[94%] bg-gradient-to-br from-sky-100 to-cyan-50 border-[3px] border-sky-300 rounded-[24px] px-4 py-2 shadow-[0_4px_0_#bae6fd]">
+              <div className="pk-hero-detail w-full max-w-[94%] bg-gradient-to-br from-sky-100 to-cyan-50 border-[3px] border-sky-300 rounded-[24px] px-4 py-2 shadow-[0_4px_0_#bae6fd]">
                 <div className="text-center font-cute font-black text-sky-500 text-base mb-1">📅 디데이</div>
                 <div className="flex flex-wrap items-center justify-center gap-2">
                   {ddays.map((d, i) => (
@@ -7738,14 +7722,14 @@ window.OI_ASSETS = {
             )}
 
             {weeklyGoalText && weeklyGoalText.trim() && (
-              <div className="w-full max-w-[94%] bg-gradient-to-br from-rose-100 to-red-50 border-[3px] border-rose-300 rounded-[24px] px-4 py-2 shadow-[0_4px_0_#fecdd3]">
-                <div className="text-center font-cute font-black text-rose-500 text-base mb-0.5">🎯 이번 주 목표</div>
-                <div className="text-center font-bold text-rose-600 text-sm break-keep whitespace-pre-line leading-snug">{weeklyGoalText}</div>
+              <div className="pk-spotlight pk-weekly-goals w-full max-w-[94%] bg-gradient-to-br from-rose-100 to-red-50 border-[3px] border-rose-300 rounded-[24px] px-4 py-2 shadow-[0_4px_0_#fecdd3]">
+                <div className="pk-spotlight-title">🎯 이번 주 목표</div>
+                <div className="pk-weekly-goals-text">{weeklyGoalText}</div>
               </div>
             )}
 
             {weekBdays.length > 0 && (
-              <div className="w-full max-w-[94%] bg-gradient-to-br from-pink-100 via-rose-50 to-amber-50 border-[3px] border-pink-300 rounded-[24px] px-4 py-2 shadow-[0_4px_0_#fbcfe8] oi-hero-in">
+              <div className="pk-hero-detail w-full max-w-[94%] bg-gradient-to-br from-pink-100 via-rose-50 to-amber-50 border-[3px] border-pink-300 rounded-[24px] px-4 py-2 shadow-[0_4px_0_#fbcfe8] oi-hero-in">
                 <div className="text-center font-cute font-black text-pink-500 text-base mb-1">🎂 생일 축하해요! 🎉</div>
                 <div className="flex flex-wrap items-center justify-center gap-2">
                   {weekBdays.map((b, i) => {
@@ -7761,13 +7745,13 @@ window.OI_ASSETS = {
             )}
 
             {words.length > 0 && (
-              <div className="w-full max-w-[94%] bg-gradient-to-br from-amber-50 to-rose-50 border-[3px] border-amber-200 rounded-[24px] px-4 py-2 shadow-[0_4px_0_#fde68a]">
-                <div className="text-center font-cute font-black text-amber-500 text-base mb-1">🔤 이번 주 영어 단어</div>
+              <div className="pk-spotlight pk-weekly-words w-full max-w-[94%] bg-gradient-to-br from-amber-50 to-rose-50 border-[3px] border-amber-200 rounded-[24px] px-4 py-2 shadow-[0_4px_0_#fde68a]">
+                <div className="pk-spotlight-title">🔤 이번 주 영어 단어</div>
                 <div className="flex flex-wrap items-center justify-center gap-2">
                   {words.map((wd, i) => (
-                    <div key={i} className="bg-white border-2 border-amber-200 rounded-xl px-2.5 py-1 shadow-sm flex items-baseline gap-1">
-                      <span className="font-cute font-black text-rose-500 text-sm">{wd.w}</span>
-                      {wd.m && <span className="font-bold text-stone-500 text-xs">{wd.m}</span>}
+                    <div key={i} className="pk-word-chip">
+                      <span className="pk-word-en">{wd.w}</span>
+                      {wd.m && <span className="pk-word-ko">{wd.m}</span>}
                     </div>
                   ))}
                 </div>
@@ -7831,7 +7815,7 @@ window.OI_ASSETS = {
       const t = Math.max(0, Math.min(100, temp || 0));
       const adj = (d) => { onUpdateTemp(Math.max(0, Math.min(100, t + d))); playSound(d > 0 ? 'pop' : 'tick'); };
       return (
-        <div style={{ right: '160px', top: '86px', bottom: '118px', width: '124px' }} className="absolute z-[300] pointer-events-auto select-none">
+        <div data-fixed-green style={{ right: '160px', top: '86px', bottom: '118px', width: '124px' }} className="pk-class-thermometer absolute z-[300] pointer-events-auto select-none">
           <div className="w-full h-full bg-white/85 backdrop-blur-md border-[3px] border-emerald-200 rounded-[26px] shadow-[4px_4px_0px_#bbf7d0] flex flex-col items-center py-3 px-2 gap-1.5">
             <div className="font-cute font-black text-emerald-600 text-sm text-center leading-tight">🥒 우리 반<br/>온도계</div>
             <div className="font-cute font-black text-emerald-600 text-2xl leading-none">{t}°</div>
@@ -7867,7 +7851,7 @@ window.OI_ASSETS = {
       useEffect(()=>{if(shownKey&&window.innerWidth>1000)setCollapsed(false);},[shownKey]);
       useEffect(()=>{if(collapsed||!shownKey)return;const timer=setTimeout(()=>setCollapsed(true),20000);return ()=>clearTimeout(timer);},[collapsed,shownKey]);
       if(!shown.length)return null;
-      return <aside className="pk-mascot-reminder" data-collapsed={collapsed} aria-label="치이카와의 오늘 안내"><button className="pk-reminder-toggle" onClick={()=>setCollapsed(!collapsed)} aria-expanded={!collapsed}>{collapsed?`치이카와 안내 ${shown.length}`:'안내 접기'}</button><img src="assets/classroom-mascots/cheering-v1.png" alt="춤추며 알려주는 치이카와"/><div className="pk-speech"><b>선생님, 잊지 마세요 ♡</b><div aria-live="polite">{shown.map(item=><div className="pk-reminder-item" key={item.id}><p>{item.text}</p><button onClick={()=>confirm(item.id)}>확인했어요</button></div>)}</div></div></aside>;
+      return <aside className="pk-mascot-reminder" data-collapsed={collapsed} aria-label="치이카와의 오늘 안내"><button className="pk-reminder-toggle" onClick={()=>setCollapsed(!collapsed)} aria-expanded={!collapsed}>{collapsed?`치이카와 안내 ${shown.length}`:'안내 접기'}</button><img src={shown.some(item=>item.id==='home')?'assets/classroom-mascots/memo-guide-v1.png':shown.some(item=>['lunch','tidy'].includes(item.id))?'assets/classroom-mascots/cleaning-guide-v1.png':'assets/classroom-mascots/cheering-v1.png'} alt={shown.some(item=>item.id==='home')?'알림장을 들고 안내하는 치이카와':shown.some(item=>['lunch','tidy'].includes(item.id))?'청소 도구를 든 치이카와':'할 일을 알려주는 치이카와'}/><div className="pk-speech"><b>선생님, 잊지 마세요 ♡</b><div aria-live="polite">{shown.map(item=><div className="pk-reminder-item" key={item.id}><p>{item.text}</p><button onClick={()=>confirm(item.id)}>확인했어요</button></div>)}</div></div></aside>;
     };
 
     const App = () => {
@@ -7880,6 +7864,8 @@ window.OI_ASSETS = {
       const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
       const [isSettingOpen, setIsSettingOpen] = useState(false);
       const [isToolsOpen,setIsToolsOpen]=useState(false);
+      const [isSettingsOpen,setIsSettingsOpen]=useState(false);
+      const [sceneMotion,setSceneMotion]=useState(()=>safeLocalStorage.getItem('oi_scene_motion')!=='off');
       const [isBackupOpen, setIsBackupOpen] = useState(false);
       const [backupInputCode, setBackupInputCode] = useState("");
 
@@ -7911,6 +7897,7 @@ window.OI_ASSETS = {
       useEffect(()=>{picklingBridge.current?.temp(classTemp);},[classTemp]);
       // 이번 주 영어 단어도 피클링 영어단어 익히기로 보내요 (피클링 카드가 연결되면 저장).
       useEffect(()=>{picklingBridge.current?.words(englishWordsText);},[englishWordsText]);
+      useEffect(()=>{picklingBridge.current?.theme?.(bgStyle.id);},[bgStyle.id]);
 
       const [dutyOrder, setDutyOrder] = useState(() => initialMaster?.dutyOrder || []);
       const [dutyCursor, setDutyCursor] = useState(() => initialMaster?.dutyCursor || 0);
@@ -8333,7 +8320,7 @@ window.OI_ASSETS = {
       const handleSetClockTimerSeconds = (sec) => { setClockTimerSeconds(typeof sec === 'function' ? sec(clockTimerSeconds) : sec); };
 
       return (
-        <div data-theme={bgStyle.id} className={`w-full h-full relative transition-all duration-500 overflow-hidden ${bgStyle.cssClass}`}>
+        <div data-theme={bgStyle.id} style={window.PicklingClassroomPalette?.variables(bgStyle.id)||{}} className={`w-full h-full relative transition-all duration-500 overflow-hidden ${bgStyle.cssClass}`}>
           {!isPseudoFullscreen && (
             <div className="absolute top-3 left-4 z-[4000] pointer-events-none select-none flex items-center gap-2 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-2xl border-[3px] border-emerald-200 shadow-[4px_4px_0px_#bbf7d0]">
               <div className="h-8 shrink-0 flex items-center justify-center oi-bob">
@@ -8346,7 +8333,7 @@ window.OI_ASSETS = {
             </div>
           )}
 
-          <aside className="absolute right-5 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-md border-[4px] border-emerald-200 rounded-[28px] p-3 shadow-[6px_6px_0px_#bbf7d0] flex flex-col gap-3 z-[6000] pointer-events-auto">
+          <aside data-settings-open={isSettingsOpen} className="pk-settings absolute right-5 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-md border-[4px] border-emerald-200 rounded-[28px] p-3 shadow-[6px_6px_0px_#bbf7d0] flex flex-col gap-3 z-[6000] pointer-events-auto"><button type="button" className="pk-settings-toggle" aria-expanded={isSettingsOpen} aria-controls="classroom-settings" onClick={()=>setIsSettingsOpen(v=>!v)}>⚙ 설정</button><div className="pk-settings-content" id="classroom-settings" hidden={!isSettingsOpen}><button type="button" className="pk-motion-toggle" aria-pressed={sceneMotion} onClick={()=>setSceneMotion(value=>{safeLocalStorage.setItem('oi_scene_motion',value?'off':'on');return !value;})}>{sceneMotion?'눈·친구 움직임 끄기':'눈·친구 움직임 켜기'}</button>
             <div className="relative flex flex-col items-center">
               <button onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)} className="w-14 h-14 bg-white hover:bg-emerald-50 border-[3px] border-emerald-200 rounded-2xl flex flex-col items-center justify-center shadow-sm transition active:scale-95">
                 <i className="fa-solid fa-image text-xl text-emerald-600"></i>
@@ -8403,9 +8390,9 @@ window.OI_ASSETS = {
               <i className={`fa-solid ${isFullscreen ? 'fa-compress' : 'fa-expand'} text-xl text-sky-600`}></i>
               <span className="text-[9px] font-bold mt-1 text-sky-800">{isFullscreen ? '일반화면' : '전체화면'}</span>
             </button>
-          </aside>
+          </div></aside>
 
-          <MascotReminder />
+          <ClassroomAmbience theme={bgStyle.id} motion={sceneMotion}/><MascotReminder />
           <main className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
             {(
               <div style={{ left: `${Math.floor(windowSize.width * 0.5) + 20}px`, width: `${Math.max(280, Math.floor(windowSize.width * 0.5) - 40 - 300)}px`, top: '104px', bottom: '136px' }} className="absolute flex flex-col items-center justify-center text-center select-none pointer-events-none transition-all duration-300">
@@ -8432,33 +8419,26 @@ window.OI_ASSETS = {
                 {w.id === 'voice-level' && <VoiceLevelWidget voiceLevel={voiceLevel} onUpdateVoiceLevel={handleUpdateVoiceLevel} width={w.width} height={w.height} />}
                 {w.id === 'scoreboard' && <ScoreboardWidget teams={scoreboardTeams} onUpdateScore={handleUpdateScore} onUpdateTeamName={handleUpdateTeamName} onAddTeam={handleAddTeam} onRemoveTeam={handleRemoveTeam} onResetScores={handleResetScores} width={w.width} height={w.height} />}
                 {w.id === 'time-attack' && <TimeAttackWidget width={w.width} height={w.height} />}
-                {w.id === 'rest' && <MusicWidget />}
+                {w.id === 'rest' && <MusicWidget width={w.width} height={w.height} />}
               </Widget>
             ))}
           </main>
 
-          <footer data-tools-open={isToolsOpen} className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/95 border-[4px] border-emerald-200 rounded-full px-8 py-3.5 shadow-[0px_8px_0px_#bbf7d0] backdrop-blur-md flex items-center gap-6 select-none pointer-events-auto" style={{ zIndex: 5000 }}>
-            <div className="flex items-center gap-2 border-r-[4px] border-emerald-200 pr-6 relative">
-              <button type="button" onClick={() => toggleWidget('timetable', '오이반 시간표 ⏰', 'fa-solid fa-table-cells', 340, 400)} className="w-12 h-12 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-sm border-2 border-emerald-300"><i className="fa-solid fa-calendar-days text-lg"></i><span className="text-[8px] font-bold mt-0.5">시간표</span></button>
-              <button type="button" onClick={() => toggleWidget('lunch', '오늘의 영양급식 🍱', 'fa-solid fa-utensils', 320, 400)} className="w-12 h-12 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-sm border-2 border-emerald-300"><i className="fa-solid fa-utensils text-lg"></i><span className="text-[8px] font-bold mt-0.5">급식</span></button>
-              <button type="button" onClick={() => {showPickling();picklingBridge.current?.openHome();}} className="relative w-12 h-12 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-sm border-2 border-emerald-300"><i className="fa-solid fa-seedling text-lg"></i><span className="text-[8px] font-bold mt-0.5">피클링</span>{picklingStatus&&(picklingStatus.books+picklingStatus.letters+(picklingStatus.suggestions||0))>0&&<span className="pk-screen-badge" title={'검사할 독서록 '+picklingStatus.books+'편 · 새 편지 '+picklingStatus.letters+'통 · 새 건의 '+(picklingStatus.suggestions||0)+'개'}>{picklingStatus.books+picklingStatus.letters+(picklingStatus.suggestions||0)}{picklingStatus.booksMore?'+':''}</span>}</button>
-              <button type="button" onClick={() => toggleWidget('fast-sites', '자주 가는 사이트 🧭', 'fa-solid fa-compass', 380, 420)} className="w-12 h-12 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-sm border-2 border-emerald-300"><i className="fa-solid fa-compass text-lg"></i><span className="text-[8px] font-bold mt-0.5">사이트</span></button>
-            </div>
-            <div className="flex items-center gap-3">
-              <button type="button" onClick={() => toggleWidget('grid-checklist', '한눈에 명렬체크표 📊', 'fa-solid fa-list-check', 460, 500)} className="w-14 h-14 rounded-2xl bg-sky-200 hover:bg-sky-300 text-sky-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#bae6fd] active:translate-y-[4px] active:shadow-none relative group border-2 border-sky-300"><i className="fa-solid fa-list-check text-xl"></i><span className="text-[9px] font-bold mt-1">표형체크</span></button>
-              <button type="button" onClick={() => toggleWidget('time-attack', '타임어택 ⏳', 'fa-solid fa-stopwatch', 380, 420)} className="w-14 h-14 rounded-2xl bg-rose-200 hover:bg-rose-300 text-rose-700 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#fecdd3] active:translate-y-[4px] active:shadow-none relative group border-2 border-rose-300"><i className="fa-solid fa-stopwatch text-xl text-rose-600"></i><span className="text-[9px] font-bold mt-1 text-rose-700">타임어택</span></button>
-              <button type="button" onClick={() => toggleWidget('record', '명렬 기록부 📋', 'fa-solid fa-address-book', 550, 500)} className="w-14 h-14 rounded-2xl bg-fuchsia-200 hover:bg-fuchsia-300 text-fuchsia-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#f5d0fe] active:translate-y-[4px] active:shadow-none relative group border-2 border-fuchsia-300"><i className="fa-solid fa-address-book text-xl"></i><span className="text-[9px] font-bold mt-1">기록부</span></button>
-              <button type="button" onClick={() => toggleWidget('random', '뽑기 상자 🎲', 'fa-solid fa-shuffle', 540, 520)} className="w-14 h-14 rounded-2xl bg-amber-200 hover:bg-amber-300 text-amber-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#fde68a] active:translate-y-[4px] active:shadow-none relative group border-2 border-amber-300"><i className="fa-solid fa-shuffle text-xl"></i><span className="text-[9px] font-bold mt-1">뽑기</span></button>
-              <button type="button" onClick={() => toggleWidget('panseo', '오이반 판서판 🖌️', 'fa-solid fa-feather-pointed', 460, 400)} className="w-14 h-14 rounded-2xl bg-indigo-200 hover:bg-indigo-300 text-indigo-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#c7d2fe] active:translate-y-[4px] active:shadow-none relative group border-2 border-indigo-300"><i className="fa-solid fa-pen-nib text-xl"></i><span className="text-[9px] font-bold mt-1">판서</span></button>
-              <button type="button" onClick={() => toggleWidget('memo', '피클링 알림장 📒', 'fa-solid fa-book-open', 600, 480)} className="w-14 h-14 rounded-2xl bg-indigo-200 hover:bg-indigo-300 text-indigo-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#c7d2fe] active:translate-y-[4px] active:shadow-none relative group border-2 border-indigo-300"><i className="fa-solid fa-book-open text-xl"></i><span className="text-[9px] font-bold mt-1">알림장</span></button>
-              <button type="button" onClick={() => toggleWidget('qr', '빠른 QR코드 메이커 🔗', 'fa-solid fa-qrcode', 320, 310)} className="w-14 h-14 rounded-2xl bg-cyan-200 hover:bg-cyan-300 text-cyan-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#a5f3fc] active:translate-y-[4px] active:shadow-none relative group border-2 border-cyan-300"><i className="fa-solid fa-qrcode text-xl"></i><span className="text-[9px] font-bold mt-1">QR코드</span></button>
-              <button type="button" onClick={() => toggleWidget('clock', '날짜 및 시간 ⏰', 'fa-solid fa-clock', 380, 480)} className="w-14 h-14 rounded-2xl bg-sky-200 hover:bg-sky-300 text-sky-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#bae6fd] active:translate-y-[4px] active:shadow-none relative group border-2 border-sky-300"><i className="fa-solid fa-clock-rotate-left text-xl"></i><span className="text-[9px] font-bold mt-1">시계/타이머</span></button>
-              <button type="button" onClick={() => toggleWidget('warning-board', '신호등 경고판 🚦', 'fa-solid fa-circle-exclamation', 460, 480)} className="w-14 h-14 rounded-2xl bg-rose-200 hover:bg-rose-300 text-rose-700 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#fecdd3] active:translate-y-[4px] active:shadow-none relative group border-2 border-rose-300"><i className="fa-solid fa-traffic-light text-xl"></i><span className="text-[9px] font-bold mt-1">경고판</span></button>
-              <button type="button" onClick={() => toggleWidget('voice-level', '목소리 크기 약속 📢', 'fa-solid fa-volume-high', 360, 320)} className="w-14 h-14 rounded-2xl bg-emerald-200 hover:bg-emerald-300 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#a7f3d0] active:translate-y-[4px] active:shadow-none relative group border-2 border-emerald-300"><i className="fa-solid fa-volume-off text-xl"></i><span className="text-[9px] font-bold mt-1">목소리</span></button>
-              <button type="button" onClick={() => toggleWidget('scoreboard', '🏆 오이반 점수판', 'fa-solid fa-trophy', 400, 400)} className="w-14 h-14 rounded-2xl bg-amber-200 hover:bg-amber-300 text-amber-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#fde68a] active:translate-y-[4px] active:shadow-none relative group border-2 border-amber-300"><i className="fa-solid fa-trophy text-xl text-amber-700"></i><span className="text-[9px] font-bold mt-1 text-amber-800">점수판</span></button>
-              <button type="button" onClick={() => toggleWidget('rest', '음악 ♪', 'fa-solid fa-music', 480, 480)} className="w-14 h-14 rounded-2xl bg-violet-200 hover:bg-violet-300 text-violet-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#ddd6fe] active:translate-y-[4px] active:shadow-none relative group border-2 border-violet-300"><i className="fa-solid fa-music text-xl"></i><span className="text-[9px] font-bold mt-1">음악</span></button>
-            </div>
-          <button type="button" className="pk-more-tools" aria-expanded={isToolsOpen} onClick={()=>setIsToolsOpen(v=>!v)}>{isToolsOpen?'접기':'더 보기'}</button></footer>
+          <footer className="pk-toolbar" data-tools-open={isToolsOpen} style={{zIndex:5000}}><div className="pk-primary-tools"><button type="button" onClick={() => toggleWidget('timetable', '오이반 시간표 ⏰', 'fa-solid fa-table-cells', 340, 400)} className="w-12 h-12 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-sm border-2 border-emerald-300"><i className="fa-solid fa-calendar-days text-lg"></i><span className="text-[8px] font-bold mt-0.5">시간표</span></button>
+<button type="button" onClick={() => toggleWidget('memo', '피클링 알림장 📒', 'fa-solid fa-book-open', 600, 480)} className="w-14 h-14 rounded-2xl bg-indigo-200 hover:bg-indigo-300 text-indigo-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#c7d2fe] active:translate-y-[4px] active:shadow-none relative group border-2 border-indigo-300"><i className="fa-solid fa-book-open text-xl"></i><span className="text-[9px] font-bold mt-1">알림장</span></button>
+<button type="button" onClick={() => {showPickling();picklingBridge.current?.openHome();}} className="relative w-12 h-12 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-sm border-2 border-emerald-300"><i className="fa-solid fa-seedling text-lg"></i><span className="text-[8px] font-bold mt-0.5">피클링</span>{picklingStatus&&(picklingStatus.books+picklingStatus.letters+(picklingStatus.suggestions||0))>0&&<span className="pk-screen-badge" title={'검사할 독서록 '+picklingStatus.books+'편 · 새 편지 '+picklingStatus.letters+'통 · 새 건의 '+(picklingStatus.suggestions||0)+'개'}>{picklingStatus.books+picklingStatus.letters+(picklingStatus.suggestions||0)}{picklingStatus.booksMore?'+':''}</span>}</button>
+<button type="button" onClick={() => toggleWidget('clock', '날짜 및 시간 ⏰', 'fa-solid fa-clock', 380, 480)} className="w-14 h-14 rounded-2xl bg-sky-200 hover:bg-sky-300 text-sky-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#bae6fd] active:translate-y-[4px] active:shadow-none relative group border-2 border-sky-300"><i className="fa-solid fa-clock-rotate-left text-xl"></i><span className="text-[9px] font-bold mt-1">시계/타이머</span></button>
+<button type="button" onClick={() => toggleWidget('random', '뽑기 상자 🎲', 'fa-solid fa-shuffle', 540, 520)} className="w-14 h-14 rounded-2xl bg-amber-200 hover:bg-amber-300 text-amber-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#fde68a] active:translate-y-[4px] active:shadow-none relative group border-2 border-amber-300"><i className="fa-solid fa-shuffle text-xl"></i><span className="text-[9px] font-bold mt-1">뽑기</span></button>
+<button type="button" onClick={() => toggleWidget('rest', '음악 ♪', 'fa-solid fa-music', 480, 480)} className="w-14 h-14 rounded-2xl bg-violet-200 hover:bg-violet-300 text-violet-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#ddd6fe] active:translate-y-[4px] active:shadow-none relative group border-2 border-violet-300"><i className="fa-solid fa-music text-xl"></i><span className="text-[9px] font-bold mt-1">음악</span></button></div><button type="button" className="pk-more-tools" aria-expanded={isToolsOpen} aria-controls="classroom-toolbox" onClick={()=>setIsToolsOpen(v=>!v)}>{isToolsOpen?'접기':'도구상자'} ⚒</button><div className="pk-extra-tools" id="classroom-toolbox" hidden={!isToolsOpen}><button type="button" onClick={() => toggleWidget('lunch', '오늘의 영양급식 🍱', 'fa-solid fa-utensils', 320, 400)} className="w-12 h-12 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-sm border-2 border-emerald-300"><i className="fa-solid fa-utensils text-lg"></i><span className="text-[8px] font-bold mt-0.5">급식</span></button>
+<button type="button" onClick={() => toggleWidget('fast-sites', '자주 가는 사이트 🧭', 'fa-solid fa-compass', 380, 420)} className="w-12 h-12 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-sm border-2 border-emerald-300"><i className="fa-solid fa-compass text-lg"></i><span className="text-[8px] font-bold mt-0.5">사이트</span></button>
+<button type="button" onClick={() => toggleWidget('grid-checklist', '한눈에 명렬체크표 📊', 'fa-solid fa-list-check', 460, 500)} className="w-14 h-14 rounded-2xl bg-sky-200 hover:bg-sky-300 text-sky-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#bae6fd] active:translate-y-[4px] active:shadow-none relative group border-2 border-sky-300"><i className="fa-solid fa-list-check text-xl"></i><span className="text-[9px] font-bold mt-1">표형체크</span></button>
+<button type="button" onClick={() => toggleWidget('time-attack', '타임어택 ⏳', 'fa-solid fa-stopwatch', 380, 420)} className="w-14 h-14 rounded-2xl bg-rose-200 hover:bg-rose-300 text-rose-700 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#fecdd3] active:translate-y-[4px] active:shadow-none relative group border-2 border-rose-300"><i className="fa-solid fa-stopwatch text-xl text-rose-600"></i><span className="text-[9px] font-bold mt-1 text-rose-700">타임어택</span></button>
+<button type="button" onClick={() => toggleWidget('record', '명렬 기록부 📋', 'fa-solid fa-address-book', 550, 500)} className="w-14 h-14 rounded-2xl bg-fuchsia-200 hover:bg-fuchsia-300 text-fuchsia-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#f5d0fe] active:translate-y-[4px] active:shadow-none relative group border-2 border-fuchsia-300"><i className="fa-solid fa-address-book text-xl"></i><span className="text-[9px] font-bold mt-1">기록부</span></button>
+<button type="button" onClick={() => toggleWidget('panseo', '오이반 판서판 🖌️', 'fa-solid fa-feather-pointed', 460, 400)} className="w-14 h-14 rounded-2xl bg-indigo-200 hover:bg-indigo-300 text-indigo-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#c7d2fe] active:translate-y-[4px] active:shadow-none relative group border-2 border-indigo-300"><i className="fa-solid fa-pen-nib text-xl"></i><span className="text-[9px] font-bold mt-1">판서</span></button>
+<button type="button" onClick={() => toggleWidget('qr', '빠른 QR코드 메이커 🔗', 'fa-solid fa-qrcode', 320, 310)} className="w-14 h-14 rounded-2xl bg-cyan-200 hover:bg-cyan-300 text-cyan-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#a5f3fc] active:translate-y-[4px] active:shadow-none relative group border-2 border-cyan-300"><i className="fa-solid fa-qrcode text-xl"></i><span className="text-[9px] font-bold mt-1">QR코드</span></button>
+<button type="button" onClick={() => toggleWidget('warning-board', '신호등 경고판 🚦', 'fa-solid fa-circle-exclamation', 460, 480)} className="w-14 h-14 rounded-2xl bg-rose-200 hover:bg-rose-300 text-rose-700 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#fecdd3] active:translate-y-[4px] active:shadow-none relative group border-2 border-rose-300"><i className="fa-solid fa-traffic-light text-xl"></i><span className="text-[9px] font-bold mt-1">경고판</span></button>
+<button type="button" onClick={() => toggleWidget('voice-level', '목소리 크기 약속 📢', 'fa-solid fa-volume-high', 360, 320)} className="w-14 h-14 rounded-2xl bg-emerald-200 hover:bg-emerald-300 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#a7f3d0] active:translate-y-[4px] active:shadow-none relative group border-2 border-emerald-300"><i className="fa-solid fa-volume-off text-xl"></i><span className="text-[9px] font-bold mt-1">목소리</span></button>
+<button type="button" onClick={() => toggleWidget('scoreboard', '🏆 오이반 점수판', 'fa-solid fa-trophy', 400, 400)} className="w-14 h-14 rounded-2xl bg-amber-200 hover:bg-amber-300 text-amber-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#fde68a] active:translate-y-[4px] active:shadow-none relative group border-2 border-amber-300"><i className="fa-solid fa-trophy text-xl text-amber-700"></i><span className="text-[9px] font-bold mt-1 text-amber-800">점수판</span></button></div></footer>
 
           {isBackupOpen && (
             <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm pointer-events-auto" style={{ zIndex: 10000 }}>
