@@ -6400,8 +6400,8 @@ body {
   <script src="assets/mascot-reminders.js?v=20261117-2"></script>
 <script src="assets/classroom-lunch.js?v=20261119-lunch"></script>
 <link rel="stylesheet" href="assets/classroom-lunch.css?v=20261119-lunch">
-<script src="assets/classroom-balance.js?v=20261120-motion-optin"></script>
-<link rel="stylesheet" href="assets/classroom-balance.css?v=20261120-motion-optin">
+<script src="assets/classroom-balance.js?v=20261120-snow-shapes"></script>
+<link rel="stylesheet" href="assets/classroom-balance.css?v=20261120-snow-shapes">
 </head>
 <body class="w-screen h-screen relative bg-slate-100 overflow-hidden">
 
@@ -7668,7 +7668,7 @@ window.OI_ASSETS = {
     const ClassroomAmbience=({theme,motion,snow=motion})=>{
       const winter=theme==='winter-snow';
       const friends=['chiikawa','hachiware','usagi','momonga'];
-      return <><div className="pk-roaming-layer" data-motion={motion} aria-hidden="true"><div className="pk-roamer pk-roamer-oyang"><img src="assets/mascots/oyang-transparent-v2.png" alt="" draggable="false"/></div><div className="pk-roamer pk-roamer-oio"><img src="assets/mascots/oio-transparent-v2.png" alt="" draggable="false"/></div>{friends.map((id,index)=><div key={id} className={'pk-roamer pk-roamer-friend pk-roamer-'+index}><img src={winter?'assets/winter/'+id+'.png':'assets/chiikawa/'+id+'.png'} alt="" draggable="false"/></div>)}</div>{winter&&<div className="pk-snow-layer" data-motion={snow} aria-hidden="true">{Array.from({length:32},(_,i)=><i key={i} style={{left:((i*37)%100)+'%',width:(5+i%4)+'px',height:(5+i%4)+'px',animationDuration:(12+i%11)+'s',animationDelay:-(i*1.7)+'s','--snow-drift':((i%2?1:-1)*(12+i%25))+'px'}}/>)}</div>}</>;
+      return <><div className="pk-roaming-layer" data-motion={motion} aria-hidden="true"><div className="pk-roamer pk-roamer-oyang"><img src="assets/mascots/oyang-transparent-v2.png" alt="" draggable="false"/></div><div className="pk-roamer pk-roamer-oio"><img src="assets/mascots/oio-transparent-v2.png" alt="" draggable="false"/></div>{friends.map((id,index)=><div key={id} className={'pk-roamer pk-roamer-friend pk-roamer-'+index}><img src={winter?'assets/winter/'+id+'.png':'assets/chiikawa/'+id+'.png'} alt="" draggable="false"/></div>)}</div>{winter&&<div className="pk-snow-layer" data-motion={snow} aria-hidden="true">{Array.from({length:32},(_,i)=>{const round=i%2===1,size=round?9+i%5:22+i%7;return <i key={i} className={round?'pk-snow-round':'pk-snow-crystal'} style={{left:((i*37)%100)+'%',width:size+'px',height:size+'px',animationDuration:(12+i%11)+'s',animationDelay:-(i*1.7)+'s','--snow-drift':((i%2?1:-1)*(12+i%25))+'px'}}>{!round&&<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 12L12.00 2.00M8.50 5.50L12.00 8.80L15.50 5.50M12 12L20.66 7.00M15.88 5.72L14.77 10.40L19.38 11.78M12 12L20.66 17.00M19.38 12.22L14.77 13.60L15.88 18.28M12 12L12.00 22.00M15.50 18.50L12.00 15.20L8.50 18.50M12 12L3.34 17.00M8.12 18.28L9.23 13.60L4.62 12.22M12 12L3.34 7.00M4.62 11.78L9.23 10.40L8.12 5.72" stroke="#ffffff" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"/><path d="M12 12L12.00 2.00M8.50 5.50L12.00 8.80L15.50 5.50M12 12L20.66 7.00M15.88 5.72L14.77 10.40L19.38 11.78M12 12L20.66 17.00M19.38 12.22L14.77 13.60L15.88 18.28M12 12L12.00 22.00M15.50 18.50L12.00 15.20L8.50 18.50M12 12L3.34 17.00M8.12 18.28L9.23 13.60L4.62 12.22M12 12L3.34 7.00M4.62 11.78L9.23 10.40L8.12 5.72" stroke="#638fb1" strokeWidth="1.55" strokeLinecap="round" strokeLinejoin="round"/></svg>}</i>;})}</div>}</>;
     };
 
     const IdleHero = ({ textColor, englishWordsText, birthdaysText, weeklyGoalText, ddayText }) => {

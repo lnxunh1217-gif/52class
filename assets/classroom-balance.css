@@ -70,3 +70,10 @@
 #root .pk-snow-layer[data-motion="true"]{display:block!important}
 #root .pk-snow-layer[data-motion="true"] i{animation-name:pk-snowfall!important;animation-play-state:running!important}
 #root .pk-snow-layer[data-motion="false"]{display:none!important}
+
+/* Larger six-arm crystals and round snow with readable edges on the pale winter theme. */
+.pk-snow-layer i{top:-36px;opacity:1}
+.pk-snow-layer i.pk-snow-round{background:#fff;border:1.5px solid #739cba;box-shadow:0 1px 3px #47799966,0 0 3px #ffffffd9}
+.pk-snow-layer i.pk-snow-round:nth-child(4n){background:#e1effb}
+.pk-snow-layer i.pk-snow-crystal{background:transparent;border:0;border-radius:0;box-shadow:none;filter:drop-shadow(0 1px 1px #436d8c66)}
+.pk-snow-crystal svg{display:block;width:100%;height:100%;overflow:visible}
