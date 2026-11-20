@@ -6402,6 +6402,8 @@ body {
 <link rel="stylesheet" href="assets/classroom-lunch.css?v=20261119-lunch">
 <script src="assets/classroom-balance.js?v=20261120-snow-shapes"></script>
 <link rel="stylesheet" href="assets/classroom-balance.css?v=20261120-snow-shapes">
+<script src="assets/classroom-windows.js?v=20261120-windows"></script>
+<link rel="stylesheet" href="assets/classroom-windows.css?v=20261120-windows">
 </head>
 <body class="w-screen h-screen relative bg-slate-100 overflow-hidden">
 
@@ -6415,7 +6417,7 @@ window.OI_ASSETS = {
 };
 </script>
   <script type="text/babel" data-presets="react,env">
-    const { useState, useEffect, useRef } = React;
+    const { useState, useEffect, useRef, useCallback } = React;
 
     const safeLocalStorage = {
       getItem: (key) => { 
@@ -6576,7 +6578,18 @@ window.OI_ASSETS = {
       fri: ["체육", "국어", "국어", "실과", "영어", "자율"]
     };
 
-    const Widget = ({ id, title, icon, x, y, width, height, isMinimized, zIndex, onClose, onDrag, onResize, onFocus, children, headerColor = "bg-emerald-100" }) => {
+    const WindowToolsDialog=({widgets,onOpen,onClose})=>{
+      const [selected,setSelected]=useState([]),panel=useRef(null);
+      useEffect(()=>{const opener=document.activeElement,frame=requestAnimationFrame(()=>panel.current?.querySelector('input')?.focus());return()=>{cancelAnimationFrame(frame);if(opener?.isConnected)opener.focus();};},[]);
+      const keyboard=e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();onClose();return;}if(e.key!=='Tab')return;const items=Array.from(panel.current?.querySelectorAll('button:not(:disabled),input:not(:disabled)')||[]),first=items[0],last=items.at(-1);if(!first)return;if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}};
+      return <div className="pk-window-backdrop" onClick={e=>{if(e.target===e.currentTarget)onClose();}}><section ref={panel} role="dialog" aria-modal="true" aria-labelledby="window-tools-title" aria-describedby="window-tools-help" className="pk-window-dialog" onKeyDown={keyboard}>
+        <header><div><h2 id="window-tools-title">여러 도구 열기</h2><p id="window-tools-help">필요한 도구를 고르면 함께 열고 정돈해요. 열려 있는 창도 함께 배치돼요.</p></div><button type="button" aria-label="도구 선택 닫기" onClick={onClose}>✕</button></header>
+        <div className="pk-window-choices">{window.PicklingClassroomWindows.CATALOG.map(tool=>{const open=widgets.some(w=>window.PicklingClassroomWindows.base(w.id)===tool.id&&!w.isMinimized),checked=selected.includes(tool.id);return <label key={tool.id} data-checked={checked}><input type="checkbox" checked={checked} onChange={()=>setSelected(prev=>prev.includes(tool.id)?prev.filter(id=>id!==tool.id):[...prev,tool.id])}/><i className={tool.icon} aria-hidden="true"/><span>{tool.label}{open&&<small>열려 있음</small>}</span></label>;})}</div>
+        <div className="pk-window-dialog-actions"><button type="button" onClick={onClose}>취소</button><button type="button" disabled={!selected.length} onClick={()=>onOpen(selected)}>선택한 도구 열기{selected.length?' ('+selected.length+')':''}</button></div>
+      </section></div>;
+    };
+
+    const Widget = ({ id, title, icon, x, y, width, height, isMinimized, zIndex, onClose, onDrag, onResize, onFocus, children, headerColor = "bg-emerald-100", active = false }) => {
       const widgetRef = useRef(null);
       const expandedBox=useRef(null);
       const [dragStart, setDragStart] = useState(null);
@@ -6639,9 +6652,9 @@ window.OI_ASSETS = {
       const headerFs = `${Math.max(13, 16 * scale)}px`;
 
       return (
-        <div ref={widgetRef} data-widget-id={id} style={{ left: `${x}px`, top: `${y}px`, width: `${width}px`, height: `${height}px`, zIndex: 1000 + zIndex, display:isMinimized?'none':undefined }}
-             className="absolute bg-white/95 rounded-[28px] border-[4px] border-emerald-200 widget-shadow flex flex-col overflow-hidden backdrop-blur-sm transition-transform duration-200 pointer-events-auto" onClick={() => onFocus(id)}>
-          <div onMouseDown={handleMouseDown} onTouchStart={handleTouchStart} className={`px-3 py-1.5 ${headerColor} cursor-move flex items-center justify-between border-b-2 border-emerald-200 select-none shrink-0`}>
+        <div ref={widgetRef} data-widget-id={id} data-active={active} style={{ left: `${x}px`, top: `${y}px`, width: `${width}px`, height: `${height}px`, zIndex: 1000 + zIndex, display:isMinimized?'none':undefined }}
+             className="absolute bg-white/95 rounded-[28px] border-[4px] border-emerald-200 widget-shadow flex flex-col overflow-hidden backdrop-blur-sm transition-transform duration-200 pointer-events-auto" onPointerDownCapture={() => onFocus(id)} onFocusCapture={() => onFocus(id)}>
+          <div onMouseDown={handleMouseDown} onTouchStart={handleTouchStart} className={`pk-widget-title px-3 py-1.5 ${headerColor} cursor-move flex items-center justify-between border-b-2 border-emerald-200 select-none shrink-0`}>
             <div className="flex items-center gap-1.5 font-black text-emerald-950 font-cute tracking-wide min-w-0 truncate" style={{ fontSize: headerFs }}>
               <i className={`${icon} text-emerald-600 drop-shadow-sm`}></i><span className="drop-shadow-sm">{title}</span>
             </div>
@@ -7967,14 +7980,14 @@ window.OI_ASSETS = {
       const [isFullscreen, setIsFullscreen] = useState(false);
       const [isPseudoFullscreen, setIsPseudoFullscreen] = useState(false);
       const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
-      const [maxZIndex, setMaxZIndex] = useState(15);
+      const [isWindowToolsOpen,setWindowToolsOpen]=useState(false);
 
       const generateDefaultLayout = (w, h) => {
         const safeW = Math.max(w, 800); 
         const safeH = Math.max(h, 500); 
         const fixedZoneW = Math.floor(safeW * 0.5); 
         const topOffset = 104; 
-        const bottomMargin = 96;
+        const bottomMargin = 120;
         const availableH = safeH - topOffset - bottomMargin;
         const marginX = 20; const gapX = 20; const gapY = 20;
         const cardW = Math.floor((fixedZoneW - (marginX * 2) - gapX) / 2);
@@ -8022,23 +8035,28 @@ window.OI_ASSETS = {
             }
             saved=saved.filter(w=>w.id!=='checklist');
             if(saved.some(w=>w.id==='random'))saved=saved.filter(w=>w.id!=='lottery');else saved=saved.map(w=>w.id==='lottery'?{...w,id:'random'}:w);
-            return saved.map(w => {
+            const restored=saved.map(w => {
                 const baseType = w.id.split('_')[0];
                 const base = { ...w, title: widgetDefinitions[baseType]?.title || '', icon: widgetDefinitions[baseType]?.icon || '', isMinimized: false, data: w.data || {} };
-                if (FIXED_IDS.includes(baseType)) { const d = def.find(x => x.id === baseType); if (d) { base.x = d.x; base.y = d.y; base.width = d.width; base.height = d.height; base.isFixed = true; } }
+                if (FIXED_IDS.includes(baseType)&&initialMaster?.windowLayout!=='arranged') { const d = def.find(x => x.id === baseType); if (d) { base.x = d.x; base.y = d.y; base.width = d.width; base.height = d.height; base.isFixed = true; } }
                 return base;
             });
+            return window.PicklingClassroomWindows.normalize(initialMaster.windowLayout==='arranged'?window.PicklingClassroomWindows.arrange(restored,{width:window.innerWidth,height:window.innerHeight}):restored);
         }
         return def;
       });
 
+      const [arrangedLayout,setArrangedLayout]=useState(()=>initialMaster?.windowLayout==='arranged');
+      const workspaceRef=useRef(null),toolbarRef=useRef(null),windowRequest=useRef(0);
+      const windowViewport=()=>({width:window.innerWidth,height:window.innerHeight,bottom:Math.max(120,window.innerHeight-(toolbarRef.current?.getBoundingClientRect().top??window.innerHeight-108)+12)});
+      const activeWidgetId=window.PicklingClassroomWindows.topId(widgets);
       const handleUpdateWidgetData = (id, newData) => {
         setWidgets(prev => prev.map(w => w.id === id ? { ...w, data: { ...(w.data || {}), ...newData } } : w));
       };
 
       const getMasterSaveData = () => {
         return {
-          layoutVersion: LAYOUT_VERSION,
+          layoutVersion: LAYOUT_VERSION, windowLayout:arrangedLayout?'arranged':'free',
           bgStyleId: bgStyle.id, students, table, lunchText, checklistTasks, checklistState, pickerHistory, groupPickerHistory, pickerExclude, pickerMode, customPickerItems, customPickerHistory,
           recordTitle, recordOptions, recordData, gridCheckTasks, gridCheckState,
           whiteboardNotes, whiteboardFontSize, whiteboardChalkMode, panseoNotes, panseoFontSize, panseoChalkMode, qrText, qrLabel, warningStates, voiceLevel, scoreboardTeams, clockSubMode, clockTimerSeconds, englishWordsText, birthdaysText, classTemp, dutyOrder, dutyCursor, dutyDate, dutyToday, weeklyGoalText, ddayText,
@@ -8049,7 +8067,7 @@ window.OI_ASSETS = {
       useEffect(() => {
         const masterObj = getMasterSaveData();
         safeLocalStorage.setItem('oi_master_save', JSON.stringify(masterObj));
-      }, [bgStyle, students, table, lunchText, checklistTasks, checklistState, pickerHistory, groupPickerHistory, pickerExclude, pickerMode, customPickerItems, customPickerHistory, recordTitle, recordOptions, recordData, gridCheckTasks, gridCheckState, whiteboardNotes, whiteboardFontSize, whiteboardChalkMode, panseoNotes, panseoFontSize, panseoChalkMode, qrText, qrLabel, warningStates, voiceLevel, scoreboardTeams, clockSubMode, clockTimerSeconds, englishWordsText, birthdaysText, classTemp, dutyOrder, dutyCursor, dutyDate, dutyToday, weeklyGoalText, ddayText, widgets]);
+      }, [bgStyle, students, table, lunchText, checklistTasks, checklistState, pickerHistory, groupPickerHistory, pickerExclude, pickerMode, customPickerItems, customPickerHistory, recordTitle, recordOptions, recordData, gridCheckTasks, gridCheckState, whiteboardNotes, whiteboardFontSize, whiteboardChalkMode, panseoNotes, panseoFontSize, panseoChalkMode, qrText, qrLabel, warningStates, voiceLevel, scoreboardTeams, clockSubMode, clockTimerSeconds, englishWordsText, birthdaysText, classTemp, dutyOrder, dutyCursor, dutyDate, dutyToday, weeklyGoalText, ddayText, widgets, arrangedLayout]);
 
       useEffect(() => {
         const handleResize = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
@@ -8060,6 +8078,7 @@ window.OI_ASSETS = {
       }, []);
 
       useEffect(() => {
+        if(arrangedLayout){setWidgets(prev=>window.PicklingClassroomWindows.arrange(prev,windowViewport()));return;}
         const def = generateDefaultLayout(windowSize.width, windowSize.height);
         setWidgets(prev => prev.map(w => { const bt = w.id.split('_')[0]; if (FIXED_IDS.includes(bt)) { const d = def.find(x => x.id === bt); if (d) return { ...w, x: d.x, y: d.y, width: d.width, height: d.height }; } return w; }));
       }, [windowSize.width, windowSize.height]);
@@ -8069,34 +8088,6 @@ window.OI_ASSETS = {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
       }, [isPseudoFullscreen]);
-
-      const rebuildFixedWidgets = (widthVal, heightVal, overrideSelections = null) => {
-        const safeW = Math.max(widthVal, 800); 
-        const safeH = Math.max(heightVal, 500); 
-        const fixedZoneW = Math.floor(safeW * 0.5); 
-        const topOffset = 104;
-        const bottomMargin = 96;
-        const availableH = safeH - topOffset - bottomMargin;
-        const marginX = 20; const gapX = 20; const gapY = 20;
-        const cardW = Math.floor((fixedZoneW - (marginX * 2) - gapX) / 2);
-        const cardH = Math.floor((availableH - gapY) / 2);
-
-        setWidgets(prev => {
-          const selections = overrideSelections !== null ? overrideSelections : prev.filter(w => !w.isFixed);
-          const fixedOnes = [
-            { id: 'timetable', title: '오이반 시간표 ⏰', icon: 'fa-solid fa-table-cells', x: marginX, y: topOffset, width: cardW, height: cardH * 2 + gapY, zIndex: 1, isFixed: true, isMinimized: false, data: {} },
-            { id: 'lunch', title: '오늘의 영양급식 🍱', icon: 'fa-solid fa-utensils', x: marginX + cardW + gapX, y: topOffset, width: cardW, height: cardH, zIndex: 2, isFixed: true, isMinimized: false, data: {} },
-            { id: 'pickling', title: '피클링 🥒', icon: 'fa-solid fa-seedling', x: marginX + cardW + gapX, y: topOffset + cardH + gapY, width: cardW, height: cardH, zIndex: 3, isFixed: true, isMinimized: false, data: {} }
-          ];
-          // 당번은 기본 화면에서 빠졌어요. 예전에 띄운 고정 당번·사이트 카드나 따로 연 피클링 카드는 겹치지 않게 정리해요.
-          return [...fixedOnes, ...selections.filter(w => !['timetable', 'lunch', 'pickling', 'board'].includes(w.id))];
-        });
-      };
-
-      useEffect(() => {
-        if (widgets.length === 0) return;
-        rebuildFixedWidgets(windowSize.width, windowSize.height);
-      }, [windowSize.width, windowSize.height, isPseudoFullscreen]);
 
       const toggleFullscreen = () => { 
         playSound('pop');
@@ -8159,7 +8150,8 @@ window.OI_ASSETS = {
                  const baseType = w.id.split('_')[0];
                  return { ...w, title: widgetDefinitions[baseType]?.title || '', icon: widgetDefinitions[baseType]?.icon || '', isMinimized: false, data: w.data || {} };
              });
-             setWidgets(hydratedWidgets);
+             setArrangedLayout(data.windowLayout==='arranged');
+             setWidgets(window.PicklingClassroomWindows.normalize(data.windowLayout==='arranged'?window.PicklingClassroomWindows.arrange(hydratedWidgets,windowViewport()):hydratedWidgets));
           }
           playSound('fanfare');
           return true;
@@ -8195,59 +8187,20 @@ window.OI_ASSETS = {
       };
 
       const handleClose = (id) => { setWidgets(prev => prev.filter(w => w.id !== id)); playSound('pop'); };
-      const handleFocus = (id) => { const nextZ = maxZIndex + 1; setMaxZIndex(nextZ); setWidgets(prev => prev.map(w => w.id === id ? { ...w, zIndex: nextZ } : w)); };
-      const handleDrag = (id, newX, newY) => { setWidgets(prev => prev.map(w => w.id === id ? { ...w, x: newX, y: newY } : w)); };
-      const handleResize = (id, newW, newH, newX, newY) => { setWidgets(prev => prev.map(w => w.id === id ? { ...w, width: newW, height: newH, x: newX !== undefined ? newX : w.x, y: newY !== undefined ? newY : w.y } : w)); };
+      const handleFocus = useCallback(id=>{setWidgets(prev=>window.PicklingClassroomWindows.front(prev,id));},[]);
+      const handleDrag = (id, newX, newY) => { setArrangedLayout(false);setWidgets(prev => prev.map(w => w.id === id ? { ...w, x: newX, y: newY } : w)); };
+      const handleResize = (id, newW, newH, newX, newY) => { setArrangedLayout(false);setWidgets(prev => prev.map(w => w.id === id ? { ...w, width: newW, height: newH, x: newX !== undefined ? newX : w.x, y: newY !== undefined ? newY : w.y } : w)); };
 
-      const toggleWidget = (baseType, title, icon, w = 380, h = 420) => {
-        const isMulti = baseType === 'qr' || baseType === 'panseo';
-        const type = isMulti ? `${baseType}_${Date.now()}` : baseType;
-
-        if (!isMulti && widgets.find(item => item.id === type)) { handleClose(type); return; }
-
-        const fixedIds = ['timetable', 'lunch', 'pickling'];
-        const isFixed = fixedIds.includes(baseType);
-
-        let startX, startY, startW, startH;
-
-        if (isFixed) {
-            const safeW = Math.max(window.innerWidth, 800); 
-            const safeH = Math.max(window.innerHeight, 500); 
-            const fixedZoneW = Math.floor(safeW * 0.5); 
-            const topOffset = 104;
-            const bottomMargin = 96;
-            const availableH = safeH - topOffset - bottomMargin;
-            const marginX = 20; const gapX = 20; const gapY = 20;
-            const cardW = Math.floor((fixedZoneW - (marginX * 2) - gapX) / 2);
-            const cardH = Math.floor((availableH - gapY) / 2);
-
-            startW = cardW; startH = cardH;
-
-            if (baseType === 'timetable') { startX = marginX; startY = topOffset; }
-            else if (baseType === 'lunch') { startX = marginX + cardW + gapX; startY = topOffset; }
-            else if (baseType === 'pickling') { startX = marginX; startY = topOffset + cardH + gapY; startW = cardW * 2 + gapX; }
-        } else {
-            startW = w; startH = h;
-            const safeW = Math.max(window.innerWidth, 800);
-            const rightZoneStart = Math.floor(safeW * 0.5) + 20; 
-            const rightZoneWidth = Math.floor(safeW * 0.5) - 40;
-            const openSelectionCount = widgets.filter(item => !item.isFixed).length;
-            startY = 80 + (openSelectionCount * 30) % 150; 
-            startX = rightZoneStart + Math.max(0, (rightZoneWidth - startW) / 2);
-        }
-
-        const newZ = maxZIndex + 1; setMaxZIndex(newZ);
-        const newWidget = { id: type, title, icon, x: startX, y: startY, width: startW, height: startH, zIndex: newZ, isFixed: isFixed, isMinimized: false, data: {} };
-
-        if (baseType === 'panseo') newWidget.data = { notes: "", fontSize: 24, chalkMode: true };
-        if (baseType === 'qr') newWidget.data = { text: "", label: "" };
-
-        setWidgets(prev => [...prev, newWidget]);
-        playSound('pop');
+      useEffect(()=>window.PicklingClassroomWindows.watchIframeFocus(document,window,handleFocus),[handleFocus]);
+      const toggleWidget=(baseType,title,icon,w=380,h=420)=>{
+        const seed=Date.now().toString(36)+'-'+windowRequest.current++;
+        setWidgets(prev=>{const next=window.PicklingClassroomWindows.toggle(prev,baseType,windowViewport(),seed,{title,icon,width:w,height:h});return arrangedLayout?window.PicklingClassroomWindows.arrange(next,windowViewport()):next;});playSound('pop');
       };
+      const openSelectedTools=ids=>{const seed=Date.now().toString(36)+'-'+windowRequest.current++;setWidgets(prev=>window.PicklingClassroomWindows.openMany(prev,ids,windowViewport(),seed));setArrangedLayout(true);setWindowToolsOpen(false);workspaceRef.current?.scrollTo({top:0,left:0});playSound('pop');};
+      const tidyOpenWindows=()=>{setWidgets(prev=>window.PicklingClassroomWindows.arrange(prev,windowViewport()));setArrangedLayout(true);workspaceRef.current?.scrollTo({top:0,left:0});playSound('pop');};
 
       const handleResetBoard = () => { 
-        setWidgets(generateDefaultLayout(window.innerWidth, window.innerHeight)); 
+        setArrangedLayout(false);setWidgets(generateDefaultLayout(window.innerWidth, window.innerHeight));
         playSound('fanfare'); 
       };
 
@@ -8292,7 +8245,8 @@ window.OI_ASSETS = {
       const handleUpdateQrText = (val) => setQrText(val);
       const handleUpdateQrLabel = (val) => setQrLabel(val);
       const showPickling=()=>{
-        setWidgets(prev=>{const top=Math.max(...prev.map(w=>w.zIndex||0),1)+1;return prev.map(w=>w.id==='pickling'?{...w,isMinimized:false,zIndex:top,height:Math.min(window.innerHeight-160,Math.max(w.height,520)),y:80}:w);});
+        const seed=Date.now().toString(36)+'-'+windowRequest.current++;
+        setWidgets(prev=>{let next=window.PicklingClassroomWindows.ensure(prev,'pickling',windowViewport(),seed);if(arrangedLayout)return window.PicklingClassroomWindows.arrange(next,windowViewport());return next.map(w=>w.id==='pickling'?{...w,height:Math.min(window.innerHeight-180,Math.max(w.height,520)),y:80}:w);});
       };
       const saveSharedMemo=fields=>picklingBridge.current?.saveMemo(fields)||Promise.resolve({ok:false,message:'피클링 카드를 먼저 연결해 주세요.'});
       const openPicklingLife=number=>{picklingBridge.current?.openLife(number);showPickling();};
@@ -8387,16 +8341,16 @@ window.OI_ASSETS = {
           </div></aside>
 
           <ClassroomAmbience theme={bgStyle.id} motion={sceneMotion} snow={snowMotion}/><MascotReminder />
-          <main className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
+          <main ref={workspaceRef} className="pk-window-workspace absolute inset-0 z-10 pointer-events-none overflow-hidden"><div className="pk-workspace-spacer" aria-hidden="true" style={{height:window.PicklingClassroomWindows.extent(widgets,windowViewport())+'px'}}/>
             {(
-              <div style={{ left: `${Math.floor(windowSize.width * 0.5) + 20}px`, width: `${Math.max(280, Math.floor(windowSize.width * 0.5) - 40 - 300)}px`, top: '104px', bottom: '96px' }} className="pk-hero-host absolute flex flex-col items-center justify-center text-center select-none pointer-events-none transition-all duration-300">
+              <div style={{ left: `${Math.floor(windowSize.width * 0.5) + 20}px`, width: `${Math.max(280, Math.floor(windowSize.width * 0.5) - 40 - 300)}px`, top: '104px', bottom: '120px' }} className="pk-hero-host absolute flex flex-col items-center justify-center text-center select-none pointer-events-none transition-all duration-300">
                 <IdleHero textColor={bgStyle.textColor} englishWordsText={englishWordsText} birthdaysText={birthdaysText} weeklyGoalText={weeklyGoalText} ddayText={ddayText} />
               </div>
             )}
             <SideThermometer temp={classTemp} onUpdateTemp={setClassTemp} />
 
             {widgets.map(w => (
-              <Widget key={w.id} id={w.id} title={w.title} icon={w.icon} x={w.x} y={w.y} width={w.width} height={w.height} isMinimized={w.isMinimized} zIndex={w.zIndex} onClose={handleClose} onDrag={handleDrag} onResize={handleResize} onFocus={handleFocus} headerColor={w.isFixed ? "bg-emerald-100" : "bg-amber-100"}>
+              <Widget key={w.id} active={w.id===activeWidgetId} id={w.id} title={w.title} icon={w.icon} x={w.x} y={w.y} width={w.width} height={w.height} isMinimized={w.isMinimized} zIndex={w.zIndex} onClose={handleClose} onDrag={handleDrag} onResize={handleResize} onFocus={handleFocus} headerColor={w.isFixed ? "bg-emerald-100" : "bg-amber-100"}>
                 {w.id === 'timetable' && <TimetableWidget table={table} onUpdateTable={handleUpdateTable} width={w.width} height={w.height} />}
                 {w.id === 'lunch' && <LunchWidget lunch={lunchText} onUpdateLunch={handleUpdateLunch} width={w.width} height={w.height} />}
                 {w.id === 'pickling' && <PicklingWidget />}
@@ -8418,21 +8372,22 @@ window.OI_ASSETS = {
             ))}
           </main>
 
-          <footer className="pk-toolbar pk-tools-all" aria-label="수업 도구 전체" style={{zIndex:5000}}><div className="pk-primary-tools"><button type="button" onClick={() => toggleWidget('timetable', '오이반 시간표 ⏰', 'fa-solid fa-table-cells', 340, 400)} className="w-12 h-12 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-sm border-2 border-emerald-300"><i className="fa-solid fa-calendar-days text-lg"></i><span className="text-[8px] font-bold mt-0.5">시간표</span></button>
+          <footer ref={toolbarRef} className="pk-toolbar pk-tools-all" aria-label="수업 도구 전체" style={{zIndex:5000}}><div className="pk-primary-tools"><button type="button" onClick={() => toggleWidget('timetable', '오이반 시간표 ⏰', 'fa-solid fa-table-cells', 340, 400)} className="w-12 h-12 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-sm border-2 border-emerald-300"><i className="fa-solid fa-calendar-days text-lg"></i><span className="text-[8px] font-bold mt-0.5">시간표</span></button>
 <button type="button" onClick={() => toggleWidget('memo', '피클링 알림장 📒', 'fa-solid fa-book-open', 600, 480)} className="w-14 h-14 rounded-2xl bg-indigo-200 hover:bg-indigo-300 text-indigo-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#c7d2fe] active:translate-y-[4px] active:shadow-none relative group border-2 border-indigo-300"><i className="fa-solid fa-book-open text-xl"></i><span className="text-[9px] font-bold mt-1">알림장</span></button>
 <button type="button" onClick={() => {showPickling();picklingBridge.current?.openHome();}} className="relative w-12 h-12 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-sm border-2 border-emerald-300"><i className="fa-solid fa-seedling text-lg"></i><span className="text-[8px] font-bold mt-0.5">피클링</span>{picklingStatus&&(picklingStatus.books+picklingStatus.letters+(picklingStatus.suggestions||0))>0&&<span className="pk-screen-badge" title={'검사할 독서록 '+picklingStatus.books+'편 · 새 편지 '+picklingStatus.letters+'통 · 새 건의 '+(picklingStatus.suggestions||0)+'개'}>{picklingStatus.books+picklingStatus.letters+(picklingStatus.suggestions||0)}{picklingStatus.booksMore?'+':''}</span>}</button>
-<button type="button" onClick={() => toggleWidget('clock', '날짜 및 시간 ⏰', 'fa-solid fa-clock', 380, 480)} className="w-14 h-14 rounded-2xl bg-sky-200 hover:bg-sky-300 text-sky-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#bae6fd] active:translate-y-[4px] active:shadow-none relative group border-2 border-sky-300"><i className="fa-solid fa-clock-rotate-left text-xl"></i><span className="text-[9px] font-bold mt-1">시계/타이머</span></button>
+<button type="button" onClick={() => toggleWidget('clock', '날짜 및 시간 ⏰', 'fa-solid fa-clock', 380, 480)} className="w-14 h-14 rounded-2xl bg-sky-200 hover:bg-sky-300 text-sky-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#bae6fd] active:translate-y-[4px] active:shadow-none relative group border-2 border-sky-300"><i className="fa-solid fa-clock-rotate-left text-xl"></i><span className="pk-clock-tool-label text-[9px] font-bold mt-1">시계/<br/>타이머</span></button>
 <button type="button" onClick={() => toggleWidget('random', '뽑기 상자 🎲', 'fa-solid fa-shuffle', 540, 520)} className="w-14 h-14 rounded-2xl bg-amber-200 hover:bg-amber-300 text-amber-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#fde68a] active:translate-y-[4px] active:shadow-none relative group border-2 border-amber-300"><i className="fa-solid fa-shuffle text-xl"></i><span className="text-[9px] font-bold mt-1">뽑기</span></button>
 <button type="button" onClick={() => toggleWidget('rest', '음악 ♪', 'fa-solid fa-music', 480, 480)} className="w-14 h-14 rounded-2xl bg-violet-200 hover:bg-violet-300 text-violet-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#ddd6fe] active:translate-y-[4px] active:shadow-none relative group border-2 border-violet-300"><i className="fa-solid fa-music text-xl"></i><span className="text-[9px] font-bold mt-1">음악</span></button></div><div className="pk-extra-tools" id="classroom-toolbox"><button type="button" onClick={() => toggleWidget('lunch', '오늘의 영양급식 🍱', 'fa-solid fa-utensils', 320, 400)} className="w-12 h-12 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-sm border-2 border-emerald-300"><i className="fa-solid fa-utensils text-lg"></i><span className="text-[8px] font-bold mt-0.5">급식</span></button>
 <button type="button" onClick={() => toggleWidget('fast-sites', '자주 가는 사이트 🧭', 'fa-solid fa-compass', 380, 420)} className="w-12 h-12 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-sm border-2 border-emerald-300"><i className="fa-solid fa-compass text-lg"></i><span className="text-[8px] font-bold mt-0.5">사이트</span></button>
-<button type="button" onClick={() => toggleWidget('grid-checklist', '한눈에 명렬체크표 📊', 'fa-solid fa-list-check', 460, 500)} className="w-14 h-14 rounded-2xl bg-sky-200 hover:bg-sky-300 text-sky-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#bae6fd] active:translate-y-[4px] active:shadow-none relative group border-2 border-sky-300"><i className="fa-solid fa-list-check text-xl"></i><span className="text-[9px] font-bold mt-1">표형체크</span></button>
-<button type="button" onClick={() => toggleWidget('time-attack', '타임어택 ⏳', 'fa-solid fa-stopwatch', 380, 420)} className="w-14 h-14 rounded-2xl bg-rose-200 hover:bg-rose-300 text-rose-700 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#fecdd3] active:translate-y-[4px] active:shadow-none relative group border-2 border-rose-300"><i className="fa-solid fa-stopwatch text-xl text-rose-600"></i><span className="text-[9px] font-bold mt-1 text-rose-700">타임어택</span></button>
+<button type="button" onClick={() => toggleWidget('grid-checklist', '한눈에 명렬체크표 📊', 'fa-solid fa-list-check', 460, 500)} className="w-14 h-14 rounded-2xl bg-sky-200 hover:bg-sky-300 text-sky-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#bae6fd] active:translate-y-[4px] active:shadow-none relative group border-2 border-sky-300"><i className="fa-solid fa-list-check text-xl"></i><span className="pk-tool-label-two text-[9px] font-bold mt-1">표형<br/>체크</span></button>
+<button type="button" onClick={() => toggleWidget('time-attack', '타임어택 ⏳', 'fa-solid fa-stopwatch', 380, 420)} className="w-14 h-14 rounded-2xl bg-rose-200 hover:bg-rose-300 text-rose-700 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#fecdd3] active:translate-y-[4px] active:shadow-none relative group border-2 border-rose-300"><i className="fa-solid fa-stopwatch text-xl text-rose-600"></i><span className="pk-tool-label-two text-[9px] font-bold mt-1 text-rose-700">타임<br/>어택</span></button>
 <button type="button" onClick={() => toggleWidget('record', '명렬 기록부 📋', 'fa-solid fa-address-book', 550, 500)} className="w-14 h-14 rounded-2xl bg-fuchsia-200 hover:bg-fuchsia-300 text-fuchsia-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#f5d0fe] active:translate-y-[4px] active:shadow-none relative group border-2 border-fuchsia-300"><i className="fa-solid fa-address-book text-xl"></i><span className="text-[9px] font-bold mt-1">기록부</span></button>
 <button type="button" onClick={() => toggleWidget('panseo', '오이반 판서판 🖌️', 'fa-solid fa-feather-pointed', 460, 400)} className="w-14 h-14 rounded-2xl bg-indigo-200 hover:bg-indigo-300 text-indigo-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#c7d2fe] active:translate-y-[4px] active:shadow-none relative group border-2 border-indigo-300"><i className="fa-solid fa-pen-nib text-xl"></i><span className="text-[9px] font-bold mt-1">판서</span></button>
-<button type="button" onClick={() => toggleWidget('qr', '빠른 QR코드 메이커 🔗', 'fa-solid fa-qrcode', 320, 310)} className="w-14 h-14 rounded-2xl bg-cyan-200 hover:bg-cyan-300 text-cyan-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#a5f3fc] active:translate-y-[4px] active:shadow-none relative group border-2 border-cyan-300"><i className="fa-solid fa-qrcode text-xl"></i><span className="text-[9px] font-bold mt-1">QR코드</span></button>
+<button type="button" onClick={() => toggleWidget('qr', '빠른 QR코드 메이커 🔗', 'fa-solid fa-qrcode', 320, 310)} className="w-14 h-14 rounded-2xl bg-cyan-200 hover:bg-cyan-300 text-cyan-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#a5f3fc] active:translate-y-[4px] active:shadow-none relative group border-2 border-cyan-300"><i className="fa-solid fa-qrcode text-xl"></i><span className="pk-tool-label-two text-[9px] font-bold mt-1">QR<br/>코드</span></button>
 <button type="button" onClick={() => toggleWidget('warning-board', '신호등 경고판 🚦', 'fa-solid fa-circle-exclamation', 460, 480)} className="w-14 h-14 rounded-2xl bg-rose-200 hover:bg-rose-300 text-rose-700 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#fecdd3] active:translate-y-[4px] active:shadow-none relative group border-2 border-rose-300"><i className="fa-solid fa-traffic-light text-xl"></i><span className="text-[9px] font-bold mt-1">경고판</span></button>
 <button type="button" onClick={() => toggleWidget('voice-level', '목소리 크기 약속 📢', 'fa-solid fa-volume-high', 360, 320)} className="w-14 h-14 rounded-2xl bg-emerald-200 hover:bg-emerald-300 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#a7f3d0] active:translate-y-[4px] active:shadow-none relative group border-2 border-emerald-300"><i className="fa-solid fa-volume-off text-xl"></i><span className="text-[9px] font-bold mt-1">목소리</span></button>
-<button type="button" onClick={() => toggleWidget('scoreboard', '🏆 오이반 점수판', 'fa-solid fa-trophy', 400, 400)} className="w-14 h-14 rounded-2xl bg-amber-200 hover:bg-amber-300 text-amber-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#fde68a] active:translate-y-[4px] active:shadow-none relative group border-2 border-amber-300"><i className="fa-solid fa-trophy text-xl text-amber-700"></i><span className="text-[9px] font-bold mt-1 text-amber-800">점수판</span></button></div></footer>
+<button type="button" onClick={() => toggleWidget('scoreboard', '🏆 오이반 점수판', 'fa-solid fa-trophy', 400, 400)} className="w-14 h-14 rounded-2xl bg-amber-200 hover:bg-amber-300 text-amber-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#fde68a] active:translate-y-[4px] active:shadow-none relative group border-2 border-amber-300"><i className="fa-solid fa-trophy text-xl text-amber-700"></i><span className="text-[9px] font-bold mt-1 text-amber-800">점수판</span></button></div><div className="pk-window-actions"><button type="button" data-window-action="open" className="pk-window-action" aria-label="여러 도구 열기" onClick={()=>setWindowToolsOpen(true)}><i className="fa-solid fa-layer-group" aria-hidden="true"/><span className="pk-tool-label-two">여러<br/>도구</span></button><button type="button" data-window-action="tidy" className="pk-window-action" aria-label="열린 창 정돈" disabled={!widgets.some(w=>!w.isMinimized)} onClick={tidyOpenWindows}><i className="fa-solid fa-table-cells-large" aria-hidden="true"/><span className="pk-tool-label-two">창<br/>정돈</span></button></div></footer>
+          {isWindowToolsOpen&&<WindowToolsDialog widgets={widgets} onOpen={openSelectedTools} onClose={()=>setWindowToolsOpen(false)}/>}
 
           {isBackupOpen && (
             <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm pointer-events-auto" style={{ zIndex: 10000 }}>
