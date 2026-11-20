@@ -6402,7 +6402,7 @@ body {
 <link rel="stylesheet" href="assets/classroom-lunch.css?v=20261120-real-tray">
 <script src="assets/classroom-balance.js?v=20261120-rhythm"></script>
 <link rel="stylesheet" href="assets/classroom-balance.css?v=20261120-snow-shapes">
-<script src="assets/classroom-windows.js?v=20261120-toolbar-qr"></script>
+<script src="assets/classroom-windows.js?v=20261120-tidy-reload"></script>
 <link rel="stylesheet" href="assets/classroom-windows.css?v=20261120-windows">
 <link rel="stylesheet" href="assets/classroom-text.css?v=20261120-text">
 <link rel="stylesheet" href="assets/classroom-ui.css?v=20261120-tray">
@@ -8038,15 +8038,16 @@ window.OI_ASSETS = {
             const restored=saved.map(w => {
                 const baseType = w.id.split('_')[0];
                 const base = { ...w, title: widgetDefinitions[baseType]?.title || '', icon: widgetDefinitions[baseType]?.icon || '', isMinimized: false, data: w.data || {} };
-                if (FIXED_IDS.includes(baseType)&&initialMaster?.windowLayout!=='arranged') { const d = def.find(x => x.id === baseType); if (d) { base.x = d.x; base.y = d.y; base.width = d.width; base.height = d.height; base.isFixed = true; } }
+                if (FIXED_IDS.includes(baseType)) { const d = def.find(x => x.id === baseType); if (d) { base.x = d.x; base.y = d.y; base.width = d.width; base.height = d.height; base.isFixed = true; } }
                 return base;
             });
-            return window.PicklingClassroomWindows.normalize(initialMaster.windowLayout==='arranged'?window.PicklingClassroomWindows.arrange(restored,{width:window.innerWidth,height:window.innerHeight}):restored);
+            return window.PicklingClassroomWindows.normalize(restored);
         }
         return def;
       });
 
-      const [arrangedLayout,setArrangedLayout]=useState(()=>initialMaster?.windowLayout==='arranged');
+      const [arrangedLayout,setArrangedLayout]=useState(false);
+      const freeGeometry=useRef({});
       const workspaceRef=useRef(null),toolbarRef=useRef(null),windowRequest=useRef(0);
       const windowViewport=()=>({width:window.innerWidth,height:window.innerHeight,bottom:Math.max(120,window.innerHeight-(toolbarRef.current?.getBoundingClientRect().top??window.innerHeight-108)+12)});
       const activeWidgetId=window.PicklingClassroomWindows.topId(widgets);
@@ -8056,11 +8057,11 @@ window.OI_ASSETS = {
 
       const getMasterSaveData = () => {
         return {
-          layoutVersion: LAYOUT_VERSION, windowLayout:arrangedLayout?'arranged':'free',
+          layoutVersion: LAYOUT_VERSION, windowLayout:'free',
           bgStyleId: bgStyle.id, students, table, lunchText, checklistTasks, checklistState, pickerHistory, groupPickerHistory, pickerExclude, pickerMode, customPickerItems, customPickerHistory,
           recordTitle, recordOptions, recordData, gridCheckTasks, gridCheckState,
           whiteboardNotes, whiteboardFontSize, whiteboardChalkMode, panseoNotes, panseoFontSize, panseoChalkMode, qrText, qrLabel, warningStates, voiceLevel, scoreboardTeams, clockSubMode, clockTimerSeconds, englishWordsText, birthdaysText, classTemp, dutyOrder, dutyCursor, dutyDate, dutyToday, weeklyGoalText, ddayText,
-          widgets: widgets.map(w => ({ id: w.id, x: w.x, y: w.y, width: w.width, height: w.height, zIndex: w.zIndex, isFixed: w.isFixed, data: w.data }))
+          widgets: window.PicklingClassroomWindows.forReload(widgets,freeGeometry.current).map(w => ({ id: w.id, x: w.x, y: w.y, width: w.width, height: w.height, zIndex: w.zIndex, isFixed: w.isFixed, data: w.data }))
         };
       };
 
@@ -8150,8 +8151,8 @@ window.OI_ASSETS = {
                  const baseType = w.id.split('_')[0];
                  return { ...w, title: widgetDefinitions[baseType]?.title || '', icon: widgetDefinitions[baseType]?.icon || '', isMinimized: false, data: w.data || {} };
              });
-             setArrangedLayout(data.windowLayout==='arranged');
-             setWidgets(window.PicklingClassroomWindows.normalize(data.windowLayout==='arranged'?window.PicklingClassroomWindows.arrange(hydratedWidgets,windowViewport()):hydratedWidgets));
+             freeGeometry.current={};setArrangedLayout(false);
+             setWidgets(window.PicklingClassroomWindows.normalize(hydratedWidgets));
           }
           playSound('fanfare');
           return true;
@@ -8186,21 +8187,21 @@ window.OI_ASSETS = {
         reader.readAsText(file);
       };
 
-      const handleClose = (id) => { setWidgets(prev => prev.filter(w => w.id !== id)); playSound('pop'); };
+      const handleClose = (id) => { delete freeGeometry.current[id];setWidgets(prev => prev.filter(w => w.id !== id)); playSound('pop'); };
       const handleFocus = useCallback(id=>{setWidgets(prev=>window.PicklingClassroomWindows.front(prev,id));},[]);
-      const handleDrag = (id, newX, newY) => { setArrangedLayout(false);setWidgets(prev => prev.map(w => w.id === id ? { ...w, x: newX, y: newY } : w)); };
-      const handleResize = (id, newW, newH, newX, newY) => { setArrangedLayout(false);setWidgets(prev => prev.map(w => w.id === id ? { ...w, width: newW, height: newH, x: newX !== undefined ? newX : w.x, y: newY !== undefined ? newY : w.y } : w)); };
+      const handleDrag = (id, newX, newY) => { setArrangedLayout(false);setWidgets(prev => prev.map(w => {if(w.id!==id)return w;const next={...w,x:newX,y:newY};freeGeometry.current=window.PicklingClassroomWindows.rememberGeometry([next],freeGeometry.current,true);return next;})); };
+      const handleResize = (id, newW, newH, newX, newY) => { setArrangedLayout(false);setWidgets(prev => prev.map(w => {if(w.id!==id)return w;const next={...w,width:newW,height:newH,x:newX!==undefined?newX:w.x,y:newY!==undefined?newY:w.y};freeGeometry.current=window.PicklingClassroomWindows.rememberGeometry([next],freeGeometry.current,true);return next;})); };
 
       useEffect(()=>window.PicklingClassroomWindows.watchIframeFocus(document,window,handleFocus),[handleFocus]);
       const toggleWidget=(baseType,title,icon,w=380,h=420)=>{
         const seed=Date.now().toString(36)+'-'+windowRequest.current++;
-        setWidgets(prev=>{const next=window.PicklingClassroomWindows.toggle(prev,baseType,windowViewport(),seed,{title,icon,width:w,height:h});return arrangedLayout?window.PicklingClassroomWindows.arrange(next,windowViewport()):next;});playSound('pop');
+        setWidgets(prev=>{const next=window.PicklingClassroomWindows.toggle(prev,baseType,windowViewport(),seed,{title,icon,width:w,height:h});freeGeometry.current=window.PicklingClassroomWindows.rememberGeometry(next,freeGeometry.current);return arrangedLayout?window.PicklingClassroomWindows.arrange(next,windowViewport()):next;});playSound('pop');
       };
-      const openSelectedTools=ids=>{const seed=Date.now().toString(36)+'-'+windowRequest.current++;setWidgets(prev=>window.PicklingClassroomWindows.openMany(prev,ids,windowViewport(),seed));setArrangedLayout(true);setWindowToolsOpen(false);workspaceRef.current?.scrollTo({top:0,left:0});playSound('pop');};
-      const tidyOpenWindows=()=>{setWidgets(prev=>window.PicklingClassroomWindows.arrange(prev,windowViewport()));setArrangedLayout(true);workspaceRef.current?.scrollTo({top:0,left:0});playSound('pop');};
+      const openSelectedTools=ids=>{const seed=Date.now().toString(36)+'-'+windowRequest.current++;setWidgets(prev=>{let opened=prev;for(const id of new Set(ids))opened=window.PicklingClassroomWindows.ensure(opened,id,windowViewport(),seed);freeGeometry.current=window.PicklingClassroomWindows.rememberGeometry(opened,freeGeometry.current);return window.PicklingClassroomWindows.arrange(opened,windowViewport());});setArrangedLayout(true);setWindowToolsOpen(false);workspaceRef.current?.scrollTo({top:0,left:0});playSound('pop');};
+      const tidyOpenWindows=()=>{setWidgets(prev=>{freeGeometry.current=window.PicklingClassroomWindows.rememberGeometry(prev,freeGeometry.current);return window.PicklingClassroomWindows.arrange(prev,windowViewport());});setArrangedLayout(true);workspaceRef.current?.scrollTo({top:0,left:0});playSound('pop');};
 
       const handleResetBoard = () => { 
-        setArrangedLayout(false);setWidgets(generateDefaultLayout(window.innerWidth, window.innerHeight));
+        freeGeometry.current={};setArrangedLayout(false);setWidgets(generateDefaultLayout(window.innerWidth, window.innerHeight));
         playSound('fanfare'); 
       };
 

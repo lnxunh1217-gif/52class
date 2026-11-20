@@ -24,6 +24,8 @@
     const next=rows.map(w=>{const z=rank.get(w.id),reveal=w.id===frontId&&w.isMinimized;if(w.zIndex===z&&!reveal)return w;changed=true;return {...w,zIndex:z,...(reveal?{isMinimized:false}:{})};});return changed?next:rows;
   }
   function front(rows,id){return normalize(rows,id);}
+  function rememberGeometry(rows,previous={},replace=false){const next={...previous};for(const row of rows)if(replace||!Object.hasOwn(next,row.id))next[row.id]={x:row.x,y:row.y,width:row.width,height:row.height};return next;}
+  function forReload(rows,geometry={}){return rows.map(row=>{const box=Object.hasOwn(geometry,row.id)?geometry[row.id]:null;return box?{...row,x:box.x,y:box.y,width:box.width,height:box.height}:row;});}
   function topId(rows){return order(rows.filter(w=>!w.isMinimized)).at(-1)?.id||null;}
   function uniqueId(type,rows,seed){const stem=type+'_'+String(seed??'new'),used=new Set(rows.map(w=>w.id));let id=stem,n=1;while(used.has(id))id=stem+'_'+n++;return id;}
   function bounds(view){const small=finite(view.width,1280)<=1000,width=Math.max(280,finite(view.width,1280)-(small?32:finite(view.width,1280)<1200?132:268));return {x:16,y:104,width,height:Math.max(240,finite(view.height,720)-104-Math.max(120,finite(view.bottom,120))),small};}
@@ -55,6 +57,6 @@
   }
   function extent(rows,view){return Math.max(finite(view.height,720),...rows.filter(w=>!w.isMinimized).map(w=>finite(w.y)+finite(w.height)+Math.max(120,finite(view.bottom,120))));}
   function watchIframeFocus(doc,win,onFocus){let timer=0;const check=()=>{win.clearTimeout(timer);timer=win.setTimeout(()=>{const frame=doc.activeElement;if(frame?.tagName!=='IFRAME')return;const pane=frame.closest('[data-widget-id]');if(pane)onFocus(pane.dataset.widgetId);},0);};win.addEventListener('blur',check);return()=>{win.clearTimeout(timer);win.removeEventListener('blur',check);};}
-  root.PicklingClassroomWindows={CATALOG,base,order,normalize,front,topId,uniqueId,bounds,arrange,ensure,openMany,toggle,extent,watchIframeFocus};
+  root.PicklingClassroomWindows={CATALOG,base,order,normalize,front,rememberGeometry,forReload,topId,uniqueId,bounds,arrange,ensure,openMany,toggle,extent,watchIframeFocus};
   if(typeof module!=='undefined')module.exports=root.PicklingClassroomWindows;
 })(typeof window==='undefined'?globalThis:window);
