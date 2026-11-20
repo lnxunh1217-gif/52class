@@ -6400,6 +6400,8 @@ body {
   <script src="assets/mascot-reminders.js?v=20261117-2"></script>
 <script src="assets/classroom-lunch.js?v=20261119-lunch"></script>
 <link rel="stylesheet" href="assets/classroom-lunch.css?v=20261119-lunch">
+<script src="assets/classroom-balance.js?v=20261120-balance"></script>
+<link rel="stylesheet" href="assets/classroom-balance.css?v=20261120-balance">
 </head>
 <body class="w-screen h-screen relative bg-slate-100 overflow-hidden">
 
@@ -7659,11 +7661,19 @@ window.OI_ASSETS = {
     const ClassroomAmbience=({theme,motion})=>{
       const winter=theme==='winter-snow';
       const friends=['chiikawa','hachiware','usagi','momonga'];
-      return <><div className="pk-roaming-layer" data-motion={motion} aria-hidden="true"><div className="pk-roamer pk-roamer-oyang"><img src={OI.oyang} alt="" draggable="false"/></div><div className="pk-roamer pk-roamer-oio"><img src={OI.oio} alt="" draggable="false"/></div>{friends.map((id,index)=><div key={id} className={'pk-roamer pk-roamer-friend pk-roamer-'+index}><img src={winter?'assets/winter/'+id+'.png':'assets/chiikawa/'+id+'.png'} alt="" draggable="false"/></div>)}</div>{winter&&<div className="pk-snow-layer" data-motion={motion} aria-hidden="true">{Array.from({length:32},(_,i)=><i key={i} style={{left:((i*37)%100)+'%',width:(3+i%4)+'px',height:(3+i%4)+'px',animationDuration:(12+i%11)+'s',animationDelay:-(i*1.7)+'s','--snow-drift':((i%2?1:-1)*(12+i%25))+'px'}}/>)}</div>}</>;
+      return <><div className="pk-roaming-layer" data-motion={motion} aria-hidden="true"><div className="pk-roamer pk-roamer-oyang"><img src="assets/mascots/oyang-transparent-v2.png" alt="" draggable="false"/></div><div className="pk-roamer pk-roamer-oio"><img src="assets/mascots/oio-transparent-v2.png" alt="" draggable="false"/></div>{friends.map((id,index)=><div key={id} className={'pk-roamer pk-roamer-friend pk-roamer-'+index}><img src={winter?'assets/winter/'+id+'.png':'assets/chiikawa/'+id+'.png'} alt="" draggable="false"/></div>)}</div>{winter&&<div className="pk-snow-layer" data-motion={motion} aria-hidden="true">{Array.from({length:32},(_,i)=><i key={i} style={{left:((i*37)%100)+'%',width:(3+i%4)+'px',height:(3+i%4)+'px',animationDuration:(12+i%11)+'s',animationDelay:-(i*1.7)+'s','--snow-drift':((i%2?1:-1)*(12+i%25))+'px'}}/>)}</div>}</>;
     };
 
     const IdleHero = ({ textColor, englishWordsText, birthdaysText, weeklyGoalText, ddayText }) => {
       const [now, setNow] = useState(new Date());
+      const heroBox=useRef(null),heroContent=useRef(null);
+      useEffect(()=>{
+        const box=heroBox.current,content=heroContent.current;if(!box||!content)return;
+        let active=true,frame=0;
+        const schedule=()=>{if(!active)return;cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{if(active&&window.innerWidth>1000)window.PicklingScreenBalance.fitHero(box,content);});};
+        schedule();const observer=window.ResizeObserver?new ResizeObserver(schedule):null;observer?.observe(box);document.fonts?.ready.then(schedule).catch(()=>{});
+        return ()=>{active=false;cancelAnimationFrame(frame);observer?.disconnect();};
+      },[weeklyGoalText,englishWordsText,birthdaysText,ddayText]);
       useEffect(() => { const t = setInterval(() => setNow(new Date()), 1000); return () => clearInterval(t); }, []);
 
       const hour = now.getHours();
@@ -7690,36 +7700,22 @@ window.OI_ASSETS = {
 
       return (
         <div className="w-full h-full flex items-center justify-center oi-hero-in p-1">
-          <div className="pk-hero-card w-full h-full bg-white/80 backdrop-blur-md border-[6px] border-emerald-200 rounded-[36px] widget-shadow px-5 py-3 flex flex-col items-center justify-center overflow-hidden">
-            <div className="pk-hero-content flex flex-col items-center gap-2 w-full">
-            <div className="pk-hero-greeting bg-emerald-100 border-2 border-emerald-200 rounded-full px-4 py-1 text-emerald-600 font-bold text-sm shadow-sm">
+          <div ref={heroBox} className="pk-hero-card w-full h-full bg-white/80 backdrop-blur-md border-[6px] border-emerald-200 rounded-[36px] widget-shadow px-5 py-3 flex flex-col items-center justify-center overflow-hidden">
+            <div ref={heroContent} className="pk-hero-content flex flex-col items-center gap-2 w-full">
+            <header className="pk-hero-header"><div className="pk-hero-greeting bg-emerald-100 border-2 border-emerald-200 rounded-full px-4 py-1 text-emerald-600 font-bold text-sm shadow-sm">
               {period}, 선생님! 오늘도 함께 배워요 🌱
             </div>
 
-            <div className="flex items-end gap-1 font-cute leading-none">
+            <div className="pk-hero-clock flex items-end gap-1 font-cute leading-none">
               <span className="font-black text-emerald-700 drop-shadow-sm tracking-tighter" style={{ fontVariantNumeric: 'tabular-nums', fontSize: 'clamp(2.2rem, 5vw, 4rem)' }}>{timeStr}</span>
               <span className="font-black text-emerald-300 mb-3" style={{ fontVariantNumeric: 'tabular-nums', fontSize: 'clamp(1rem, 2vw, 1.6rem)' }}>:{String(sec).padStart(2, '0')}</span>
             </div>
 
-            <div className="bg-white border-2 border-emerald-200 rounded-2xl px-4 py-1 text-emerald-600 font-bold text-sm shadow-sm">
+            <div className="pk-hero-date bg-white border-2 border-emerald-200 rounded-2xl px-4 py-1 text-emerald-600 font-bold shadow-sm">
               📅 {dateStr}
-            </div>
+            </div></header>
 
 
-
-            {ddays.length > 0 && (
-              <div className="pk-hero-detail w-full max-w-[94%] bg-gradient-to-br from-sky-100 to-cyan-50 border-[3px] border-sky-300 rounded-[24px] px-4 py-2 shadow-[0_4px_0_#bae6fd]">
-                <div className="text-center font-cute font-black text-sky-500 text-base mb-1">📅 디데이</div>
-                <div className="flex flex-wrap items-center justify-center gap-2">
-                  {ddays.map((d, i) => (
-                    <div key={i} className={`rounded-xl px-3 py-1 border-2 shadow-sm font-black flex items-center gap-1.5 ${d.diff === 0 ? 'bg-sky-400 text-white border-sky-500 animate-pulse' : 'bg-white text-sky-600 border-sky-200'}`}>
-                      <span className="text-sm">{d.name}</span>
-                      <span className="font-cute text-base">{d.diff === 0 ? 'D-DAY 🎉' : `D-${d.diff}`}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {weeklyGoalText && weeklyGoalText.trim() && (
               <div className="pk-spotlight pk-weekly-goals w-full max-w-[94%] bg-gradient-to-br from-rose-100 to-red-50 border-[3px] border-rose-300 rounded-[24px] px-4 py-2 shadow-[0_4px_0_#fecdd3]">
@@ -7728,26 +7724,10 @@ window.OI_ASSETS = {
               </div>
             )}
 
-            {weekBdays.length > 0 && (
-              <div className="pk-hero-detail w-full max-w-[94%] bg-gradient-to-br from-pink-100 via-rose-50 to-amber-50 border-[3px] border-pink-300 rounded-[24px] px-4 py-2 shadow-[0_4px_0_#fbcfe8] oi-hero-in">
-                <div className="text-center font-cute font-black text-pink-500 text-base mb-1">🎂 생일 축하해요! 🎉</div>
-                <div className="flex flex-wrap items-center justify-center gap-2">
-                  {weekBdays.map((b, i) => {
-                    const today = isBdayToday(b);
-                    return (
-                      <div key={i} className={`rounded-xl px-3 py-1 border-2 shadow-sm font-black ${today ? 'bg-pink-400 text-white border-pink-500 animate-pulse text-base' : 'bg-white text-pink-500 border-pink-200 text-sm'}`}>
-                        {today && '🎈 '}{b.name} <span className="text-sm font-bold opacity-80">({b.mon}/{b.day})</span>{today && ' 🥳'}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
             {words.length > 0 && (
               <div className="pk-spotlight pk-weekly-words w-full max-w-[94%] bg-gradient-to-br from-amber-50 to-rose-50 border-[3px] border-amber-200 rounded-[24px] px-4 py-2 shadow-[0_4px_0_#fde68a]">
                 <div className="pk-spotlight-title">🔤 이번 주 영어 단어</div>
-                <div className="flex flex-wrap items-center justify-center gap-2">
+                <div className="pk-words-grid flex flex-wrap items-center justify-center gap-2">
                   {words.map((wd, i) => (
                     <div key={i} className="pk-word-chip">
                       <span className="pk-word-en">{wd.w}</span>
@@ -7757,6 +7737,7 @@ window.OI_ASSETS = {
                 </div>
               </div>
             )}
+            {(ddays.length>0||weekBdays.length>0)&&<div className="pk-hero-extras" aria-label="생일과 디데이">{ddays.map((d,i)=><span key={'d'+i}>📅 {d.name} · {d.diff===0?'D-DAY':`D-${d.diff}`}</span>)}{weekBdays.map((b,i)=><span key={'b'+i}>🎂 {b.name} · {b.mon}/{b.day}{isBdayToday(b)?' 오늘 생일!':''}</span>)}</div>}
             </div>
           </div>
         </div>
@@ -7863,8 +7844,8 @@ window.OI_ASSETS = {
 
       const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
       const [isSettingOpen, setIsSettingOpen] = useState(false);
-      const [isToolsOpen,setIsToolsOpen]=useState(false);
-      const [isSettingsOpen,setIsSettingsOpen]=useState(false);
+
+
       const [sceneMotion,setSceneMotion]=useState(()=>safeLocalStorage.getItem('oi_scene_motion')!=='off');
       const [isBackupOpen, setIsBackupOpen] = useState(false);
       const [backupInputCode, setBackupInputCode] = useState("");
@@ -7980,7 +7961,7 @@ window.OI_ASSETS = {
         const safeH = Math.max(h, 500); 
         const fixedZoneW = Math.floor(safeW * 0.5); 
         const topOffset = 104; 
-        const bottomMargin = 136;
+        const bottomMargin = 96;
         const availableH = safeH - topOffset - bottomMargin;
         const marginX = 20; const gapX = 20; const gapY = 20;
         const cardW = Math.floor((fixedZoneW - (marginX * 2) - gapX) / 2);
@@ -8081,7 +8062,7 @@ window.OI_ASSETS = {
         const safeH = Math.max(heightVal, 500); 
         const fixedZoneW = Math.floor(safeW * 0.5); 
         const topOffset = 104;
-        const bottomMargin = 136; 
+        const bottomMargin = 96;
         const availableH = safeH - topOffset - bottomMargin;
         const marginX = 20; const gapX = 20; const gapY = 20;
         const cardW = Math.floor((fixedZoneW - (marginX * 2) - gapX) / 2);
@@ -8221,7 +8202,7 @@ window.OI_ASSETS = {
             const safeH = Math.max(window.innerHeight, 500); 
             const fixedZoneW = Math.floor(safeW * 0.5); 
             const topOffset = 104;
-            const bottomMargin = 136; 
+            const bottomMargin = 96;
             const availableH = safeH - topOffset - bottomMargin;
             const marginX = 20; const gapX = 20; const gapY = 20;
             const cardW = Math.floor((fixedZoneW - (marginX * 2) - gapX) / 2);
@@ -8333,7 +8314,7 @@ window.OI_ASSETS = {
             </div>
           )}
 
-          <aside data-settings-open={isSettingsOpen} className="pk-settings absolute right-5 top-1/2 -translate-y-1/2 bg-white/95 backdrop-blur-md border-[4px] border-emerald-200 rounded-[28px] p-3 shadow-[6px_6px_0px_#bbf7d0] flex flex-col gap-3 z-[6000] pointer-events-auto"><button type="button" className="pk-settings-toggle" aria-expanded={isSettingsOpen} aria-controls="classroom-settings" onClick={()=>setIsSettingsOpen(v=>!v)}>⚙ 설정</button><div className="pk-settings-content" id="classroom-settings" hidden={!isSettingsOpen}><button type="button" className="pk-motion-toggle" aria-pressed={sceneMotion} onClick={()=>setSceneMotion(value=>{safeLocalStorage.setItem('oi_scene_motion',value?'off':'on');return !value;})}>{sceneMotion?'눈·친구 움직임 끄기':'눈·친구 움직임 켜기'}</button>
+          <aside aria-label="화면 설정" className="pk-settings absolute z-[6000] pointer-events-auto"><div className="pk-settings-heading">설정</div><div className="pk-settings-content" id="classroom-settings"><button type="button" className="pk-motion-toggle" aria-pressed={sceneMotion} onClick={()=>setSceneMotion(value=>{safeLocalStorage.setItem('oi_scene_motion',value?'off':'on');return !value;})}>{sceneMotion?'눈·친구 움직임 끄기':'눈·친구 움직임 켜기'}</button>
             <div className="relative flex flex-col items-center">
               <button onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)} className="w-14 h-14 bg-white hover:bg-emerald-50 border-[3px] border-emerald-200 rounded-2xl flex flex-col items-center justify-center shadow-sm transition active:scale-95">
                 <i className="fa-solid fa-image text-xl text-emerald-600"></i>
@@ -8395,7 +8376,7 @@ window.OI_ASSETS = {
           <ClassroomAmbience theme={bgStyle.id} motion={sceneMotion}/><MascotReminder />
           <main className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
             {(
-              <div style={{ left: `${Math.floor(windowSize.width * 0.5) + 20}px`, width: `${Math.max(280, Math.floor(windowSize.width * 0.5) - 40 - 300)}px`, top: '104px', bottom: '136px' }} className="absolute flex flex-col items-center justify-center text-center select-none pointer-events-none transition-all duration-300">
+              <div style={{ left: `${Math.floor(windowSize.width * 0.5) + 20}px`, width: `${Math.max(280, Math.floor(windowSize.width * 0.5) - 40 - 300)}px`, top: '104px', bottom: '96px' }} className="pk-hero-host absolute flex flex-col items-center justify-center text-center select-none pointer-events-none transition-all duration-300">
                 <IdleHero textColor={bgStyle.textColor} englishWordsText={englishWordsText} birthdaysText={birthdaysText} weeklyGoalText={weeklyGoalText} ddayText={ddayText} />
               </div>
             )}
@@ -8424,12 +8405,12 @@ window.OI_ASSETS = {
             ))}
           </main>
 
-          <footer className="pk-toolbar" data-tools-open={isToolsOpen} style={{zIndex:5000}}><div className="pk-primary-tools"><button type="button" onClick={() => toggleWidget('timetable', '오이반 시간표 ⏰', 'fa-solid fa-table-cells', 340, 400)} className="w-12 h-12 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-sm border-2 border-emerald-300"><i className="fa-solid fa-calendar-days text-lg"></i><span className="text-[8px] font-bold mt-0.5">시간표</span></button>
+          <footer className="pk-toolbar pk-tools-all" aria-label="수업 도구 전체" style={{zIndex:5000}}><div className="pk-primary-tools"><button type="button" onClick={() => toggleWidget('timetable', '오이반 시간표 ⏰', 'fa-solid fa-table-cells', 340, 400)} className="w-12 h-12 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-sm border-2 border-emerald-300"><i className="fa-solid fa-calendar-days text-lg"></i><span className="text-[8px] font-bold mt-0.5">시간표</span></button>
 <button type="button" onClick={() => toggleWidget('memo', '피클링 알림장 📒', 'fa-solid fa-book-open', 600, 480)} className="w-14 h-14 rounded-2xl bg-indigo-200 hover:bg-indigo-300 text-indigo-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#c7d2fe] active:translate-y-[4px] active:shadow-none relative group border-2 border-indigo-300"><i className="fa-solid fa-book-open text-xl"></i><span className="text-[9px] font-bold mt-1">알림장</span></button>
 <button type="button" onClick={() => {showPickling();picklingBridge.current?.openHome();}} className="relative w-12 h-12 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-sm border-2 border-emerald-300"><i className="fa-solid fa-seedling text-lg"></i><span className="text-[8px] font-bold mt-0.5">피클링</span>{picklingStatus&&(picklingStatus.books+picklingStatus.letters+(picklingStatus.suggestions||0))>0&&<span className="pk-screen-badge" title={'검사할 독서록 '+picklingStatus.books+'편 · 새 편지 '+picklingStatus.letters+'통 · 새 건의 '+(picklingStatus.suggestions||0)+'개'}>{picklingStatus.books+picklingStatus.letters+(picklingStatus.suggestions||0)}{picklingStatus.booksMore?'+':''}</span>}</button>
 <button type="button" onClick={() => toggleWidget('clock', '날짜 및 시간 ⏰', 'fa-solid fa-clock', 380, 480)} className="w-14 h-14 rounded-2xl bg-sky-200 hover:bg-sky-300 text-sky-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#bae6fd] active:translate-y-[4px] active:shadow-none relative group border-2 border-sky-300"><i className="fa-solid fa-clock-rotate-left text-xl"></i><span className="text-[9px] font-bold mt-1">시계/타이머</span></button>
 <button type="button" onClick={() => toggleWidget('random', '뽑기 상자 🎲', 'fa-solid fa-shuffle', 540, 520)} className="w-14 h-14 rounded-2xl bg-amber-200 hover:bg-amber-300 text-amber-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#fde68a] active:translate-y-[4px] active:shadow-none relative group border-2 border-amber-300"><i className="fa-solid fa-shuffle text-xl"></i><span className="text-[9px] font-bold mt-1">뽑기</span></button>
-<button type="button" onClick={() => toggleWidget('rest', '음악 ♪', 'fa-solid fa-music', 480, 480)} className="w-14 h-14 rounded-2xl bg-violet-200 hover:bg-violet-300 text-violet-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#ddd6fe] active:translate-y-[4px] active:shadow-none relative group border-2 border-violet-300"><i className="fa-solid fa-music text-xl"></i><span className="text-[9px] font-bold mt-1">음악</span></button></div><button type="button" className="pk-more-tools" aria-expanded={isToolsOpen} aria-controls="classroom-toolbox" onClick={()=>setIsToolsOpen(v=>!v)}>{isToolsOpen?'접기':'도구상자'} ⚒</button><div className="pk-extra-tools" id="classroom-toolbox" hidden={!isToolsOpen}><button type="button" onClick={() => toggleWidget('lunch', '오늘의 영양급식 🍱', 'fa-solid fa-utensils', 320, 400)} className="w-12 h-12 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-sm border-2 border-emerald-300"><i className="fa-solid fa-utensils text-lg"></i><span className="text-[8px] font-bold mt-0.5">급식</span></button>
+<button type="button" onClick={() => toggleWidget('rest', '음악 ♪', 'fa-solid fa-music', 480, 480)} className="w-14 h-14 rounded-2xl bg-violet-200 hover:bg-violet-300 text-violet-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#ddd6fe] active:translate-y-[4px] active:shadow-none relative group border-2 border-violet-300"><i className="fa-solid fa-music text-xl"></i><span className="text-[9px] font-bold mt-1">음악</span></button></div><div className="pk-extra-tools" id="classroom-toolbox"><button type="button" onClick={() => toggleWidget('lunch', '오늘의 영양급식 🍱', 'fa-solid fa-utensils', 320, 400)} className="w-12 h-12 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-sm border-2 border-emerald-300"><i className="fa-solid fa-utensils text-lg"></i><span className="text-[8px] font-bold mt-0.5">급식</span></button>
 <button type="button" onClick={() => toggleWidget('fast-sites', '자주 가는 사이트 🧭', 'fa-solid fa-compass', 380, 420)} className="w-12 h-12 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-sm border-2 border-emerald-300"><i className="fa-solid fa-compass text-lg"></i><span className="text-[8px] font-bold mt-0.5">사이트</span></button>
 <button type="button" onClick={() => toggleWidget('grid-checklist', '한눈에 명렬체크표 📊', 'fa-solid fa-list-check', 460, 500)} className="w-14 h-14 rounded-2xl bg-sky-200 hover:bg-sky-300 text-sky-800 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#bae6fd] active:translate-y-[4px] active:shadow-none relative group border-2 border-sky-300"><i className="fa-solid fa-list-check text-xl"></i><span className="text-[9px] font-bold mt-1">표형체크</span></button>
 <button type="button" onClick={() => toggleWidget('time-attack', '타임어택 ⏳', 'fa-solid fa-stopwatch', 380, 420)} className="w-14 h-14 rounded-2xl bg-rose-200 hover:bg-rose-300 text-rose-700 hover:scale-110 active:scale-95 transition flex flex-col items-center justify-center shadow-[0_4px_0_#fecdd3] active:translate-y-[4px] active:shadow-none relative group border-2 border-rose-300"><i className="fa-solid fa-stopwatch text-xl text-rose-600"></i><span className="text-[9px] font-bold mt-1 text-rose-700">타임어택</span></button>
