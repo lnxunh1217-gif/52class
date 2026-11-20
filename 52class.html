@@ -6400,10 +6400,11 @@ body {
   <script src="assets/mascot-reminders.js?v=20261117-2"></script>
 <script src="assets/classroom-lunch.js?v=20261119-lunch"></script>
 <link rel="stylesheet" href="assets/classroom-lunch.css?v=20261119-lunch">
-<script src="assets/classroom-balance.js?v=20261120-snow-shapes"></script>
+<script src="assets/classroom-balance.js?v=20261120-text-words"></script>
 <link rel="stylesheet" href="assets/classroom-balance.css?v=20261120-snow-shapes">
 <script src="assets/classroom-windows.js?v=20261120-windows"></script>
 <link rel="stylesheet" href="assets/classroom-windows.css?v=20261120-windows">
+<link rel="stylesheet" href="assets/classroom-text.css?v=20261120-text">
 </head>
 <body class="w-screen h-screen relative bg-slate-100 overflow-hidden">
 
@@ -6655,17 +6656,17 @@ window.OI_ASSETS = {
         <div ref={widgetRef} data-widget-id={id} data-active={active} style={{ left: `${x}px`, top: `${y}px`, width: `${width}px`, height: `${height}px`, zIndex: 1000 + zIndex, display:isMinimized?'none':undefined }}
              className="absolute bg-white/95 rounded-[28px] border-[4px] border-emerald-200 widget-shadow flex flex-col overflow-hidden backdrop-blur-sm transition-transform duration-200 pointer-events-auto" onPointerDownCapture={() => onFocus(id)} onFocusCapture={() => onFocus(id)}>
           <div onMouseDown={handleMouseDown} onTouchStart={handleTouchStart} className={`pk-widget-title px-3 py-1.5 ${headerColor} cursor-move flex items-center justify-between border-b-2 border-emerald-200 select-none shrink-0`}>
-            <div className="flex items-center gap-1.5 font-black text-emerald-950 font-cute tracking-wide min-w-0 truncate" style={{ fontSize: headerFs }}>
-              <i className={`${icon} text-emerald-600 drop-shadow-sm`}></i><span className="drop-shadow-sm">{title}</span>
+            <div className="pk-widget-heading flex items-center gap-1.5 font-black text-emerald-950 font-cute min-w-0" style={{ fontSize: headerFs }}>
+              <i className={`${icon} text-emerald-600 drop-shadow-sm`}></i><span className="pk-widget-name drop-shadow-sm">{title}</span>
             </div>
-            <div className="flex items-center gap-2 no-drag">
+            <div className="pk-widget-tools flex items-center gap-2 no-drag">
               {(id.startsWith('panseo')||id==='memo')&&<button type="button" aria-label={expandedBox.current?'원래 창 크기':'창 크게'} onClick={()=>{if(expandedBox.current){const box=expandedBox.current;expandedBox.current=null;onResize(id,box.width,box.height,box.x,box.y);}else{expandedBox.current={width,height,x,y};onResize(id,Math.max(280,window.innerWidth-48),Math.max(220,window.innerHeight-140),24,70);}}} className="w-7 h-7 rounded-full bg-white/80 text-emerald-700"><i className={'fa-solid '+(expandedBox.current?'fa-compress':'fa-expand')}></i></button>}
               <button onClick={() => onClose(id)} style={{ width: `${24 * scale}px`, height: `${24 * scale}px`, fontSize: `${12 * scale}px` }} className="bg-rose-400 hover:bg-rose-500 text-white rounded-full flex items-center justify-center transition shadow-[2px_2px_0px_#f43f5e] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]">
                 <i className="fa-solid fa-xmark"></i>
               </button>
             </div>
           </div>
-          <div className="flex-1 p-3 overflow-y-auto overflow-x-hidden relative bg-emerald-50/30 pointer-events-auto">
+          <div className="pk-widget-body flex-1 p-3 overflow-y-auto overflow-x-hidden relative bg-emerald-50/30 pointer-events-auto">
             {children}
           </div>
           <div onMouseDown={(e) => handleResizeMouseDown(e, 'n')} onTouchStart={(e) => handleResizeTouchStart(e, 'n')} className="absolute top-0 left-3 right-3 h-2 cursor-n-resize no-drag pointer-events-auto z-10" />
@@ -6680,6 +6681,16 @@ window.OI_ASSETS = {
           </div>
         </div>
       );
+    };
+
+    const TimetableSubject=({value,onChange,style,className})=>{
+      const field=useRef(null);
+      useEffect(()=>{const node=field.current;if(!node)return;let active=true,frame=0,lastWidth=0;
+        const fit=()=>{if(!active)return;const css=getComputedStyle(node);node.style.height='auto';node.style.height=Math.ceil(node.scrollHeight+(parseFloat(css.borderTopWidth)||0)+(parseFloat(css.borderBottomWidth)||0))+'px';};
+        const schedule=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(fit);};schedule();const observer=window.ResizeObserver?new ResizeObserver(entries=>{const width=entries[0]?.contentRect.width;if(width!==lastWidth){lastWidth=width;schedule();}}):null;observer?.observe(node);document.fonts?.ready.then(schedule).catch(()=>{});
+        return()=>{active=false;cancelAnimationFrame(frame);observer?.disconnect();};
+      },[value,style?.fontSize]);
+      return <textarea ref={field} rows="2" aria-label="교과명" title={value||''} value={value} onChange={event=>{event.target.value=event.target.value.replace(/[\r\n]+/g,'');onChange(event);}} onKeyDown={event=>{if(event.key==='Enter')event.preventDefault();}} style={{...style,lineHeight:1.45}} className={'pk-subject-field '+(className||'').replace(/\b(h-full|truncate)\b/g,'')}/>;
     };
 
     const TimetableWidget = ({ table, onUpdateTable, width, height }) => {
@@ -6712,10 +6723,10 @@ window.OI_ASSETS = {
               </div>
               <div className="flex-1 flex flex-col gap-1 mt-1 min-h-0">
                 {[0, 1, 2, 3, 4, 5].map(period => (
-                  <div key={period} className="grid grid-cols-6 gap-1 flex-1 min-h-0">
+                  <div key={period} className="pk-subject-week-row grid grid-cols-6 gap-1 flex-1 min-h-0">
                     <div style={{ fontSize: fs(12) }} className="flex items-center justify-center font-bold text-emerald-800 bg-emerald-50 rounded-lg border border-emerald-100">{period + 1}</div>
                     {days.map(day => (
-                      <input key={day.id} type="text" style={{ fontSize: `${baseFontSize}px` }} value={table[day.id]?.[period] || ""} onChange={(e) => onUpdateTable(day.id, period, e.target.value)} placeholder="-" className="w-full h-full text-center bg-white border-2 border-emerald-100 hover:border-emerald-300 rounded-lg text-stone-700 font-cute focus:outline-none focus:border-emerald-500 font-black allow-select transition-colors" />
+                      <TimetableSubject key={day.id} style={{ fontSize: `${baseFontSize}px` }} value={table[day.id]?.[period] || ""} onChange={(e) => onUpdateTable(day.id, period, e.target.value)} placeholder="-" className="w-full h-full text-center bg-white border-2 border-emerald-100 hover:border-emerald-300 rounded-lg text-stone-700 font-cute focus:outline-none focus:border-emerald-500 font-black allow-select transition-colors" />
                     ))}
                   </div>
                 ))}
@@ -6729,19 +6740,19 @@ window.OI_ASSETS = {
                 ))}
               </div>
               <div className="flex-1 bg-white border-4 border-emerald-200 rounded-2xl p-2 flex flex-col gap-2 min-h-0 shadow-inner">
-                <div className="grid grid-cols-3 gap-2 flex-1 min-h-0">
+                <div className="pk-subject-row grid grid-cols-3 gap-2 flex-1 min-h-0">
                   {[0, 1, 2].map(period => (
                     <div key={period} className="flex flex-col bg-amber-50/50 p-1.5 rounded-2xl border-2 border-amber-200 justify-center items-center gap-1 overflow-hidden hover:bg-amber-50 transition-colors">
                       <span style={{ fontSize: fs(11) }} className="font-bold text-amber-950 bg-amber-200/80 px-2 py-0.5 rounded-full text-center shrink-0">{period + 1}교시</span>
-                      <input type="text" style={{ fontSize: fs(22) }} value={table[selectedDay]?.[period] || ""} onChange={(e) => onUpdateTable(selectedDay, period, e.target.value)} placeholder="-" className="w-full text-center bg-transparent font-black font-cute text-stone-800 outline-none allow-select truncate" />
+                      <TimetableSubject style={{ fontSize: fs(22) }} value={table[selectedDay]?.[period] || ""} onChange={(e) => onUpdateTable(selectedDay, period, e.target.value)} placeholder="-" className="w-full text-center bg-transparent font-black font-cute text-stone-800 outline-none allow-select truncate" />
                     </div>
                   ))}
                 </div>
-                <div className="grid grid-cols-3 gap-2 flex-1 min-h-0">
+                <div className="pk-subject-row grid grid-cols-3 gap-2 flex-1 min-h-0">
                   {[3, 4, 5].map(period => (
                     <div key={period} className="flex flex-col bg-emerald-50/50 p-1.5 rounded-2xl border-2 border-emerald-200 justify-center items-center gap-1 overflow-hidden hover:bg-emerald-50 transition-colors">
                       <span style={{ fontSize: fs(11) }} className="font-bold text-emerald-950 bg-emerald-200/80 px-2 py-0.5 rounded-full text-center shrink-0">{period + 1}교시</span>
-                      <input type="text" style={{ fontSize: fs(22) }} value={table[selectedDay]?.[period] || ""} onChange={(e) => onUpdateTable(selectedDay, period, e.target.value)} placeholder="-" className="w-full text-center bg-transparent font-black font-cute text-stone-800 outline-none allow-select truncate" />
+                      <TimetableSubject style={{ fontSize: fs(22) }} value={table[selectedDay]?.[period] || ""} onChange={(e) => onUpdateTable(selectedDay, period, e.target.value)} placeholder="-" className="w-full text-center bg-transparent font-black font-cute text-stone-800 outline-none allow-select truncate" />
                     </div>
                   ))}
                 </div>
@@ -6940,8 +6951,8 @@ window.OI_ASSETS = {
       const [confirmClear, setConfirmClear] = useState(false);
       useEffect(() => { if (!confirmClear) return; const t = setTimeout(() => setConfirmClear(false), 3000); return () => clearTimeout(t); }, [confirmClear]);
       return (
-        <div className="w-full h-full flex flex-col no-drag">
-          <div className="flex justify-between items-center mb-2 shrink-0 bg-emerald-50 p-1.5 rounded-xl border-2 border-emerald-100 shadow-[2px_2px_0px_#d1fae5]">
+        <div className="pk-notes-widget w-full h-full flex flex-col no-drag">
+          <div className="pk-notes-toolbar flex justify-between items-center mb-2 shrink-0 bg-emerald-50 p-1.5 rounded-xl border-2 border-emerald-100 shadow-[2px_2px_0px_#d1fae5]">
              <div className="flex items-center gap-1">
                <button onClick={() => {onUpdateFontSize(-2); playSound('tick');}} className="w-8 h-8 bg-white rounded-lg font-bold text-stone-500 hover:bg-emerald-100 transition shadow-[0_2px_0_#d1fae5] active:shadow-none active:translate-y-[2px]">-</button>
                <span className="w-8 text-center text-xs font-bold text-stone-500">{fontSize}</span>
@@ -7045,7 +7056,7 @@ window.OI_ASSETS = {
 
       return (
         <div className="w-full h-full flex flex-col gap-2 no-drag">
-           <div className="flex gap-2 shrink-0 bg-sky-50 p-2 rounded-2xl border-[4px] border-sky-200 shadow-[4px_4px_0px_#e0f2fe]">
+           <div className="pk-entry-toolbar flex gap-2 shrink-0 bg-sky-50 p-2 rounded-2xl border-[4px] border-sky-200 shadow-[4px_4px_0px_#e0f2fe]">
              <input type="text" value={newTask} onChange={e=>setNewTask(e.target.value)} placeholder="새 항목 (예: 알림장)" className="flex-1 border-2 border-sky-200 focus:border-sky-400 outline-none rounded-xl px-3 py-1.5 text-sm allow-select font-bold text-stone-700 transition" />
              <button onClick={() => { if(newTask.trim()){ onAddTask(newTask.trim()); setNewTask(""); } }} className="bg-sky-400 hover:bg-sky-500 text-white px-4 rounded-xl font-bold text-sm shadow-[0_3px_0_#7dd3fc] active:translate-y-[3px] active:shadow-none transition-all">추가</button>
            </div>
@@ -7105,7 +7116,7 @@ window.OI_ASSETS = {
             <div className="w-full h-full flex flex-col gap-2 no-drag">
                <div className="flex flex-col gap-2 shrink-0 bg-fuchsia-50 p-3 rounded-2xl border-[4px] border-fuchsia-300 shadow-[4px_4px_0px_#f5d0fe]">
                  <input type="text" value={recordTitle} onChange={e=>onUpdateTitle(e.target.value)} placeholder="기록 주제 (예: 1학기 글쓰기)" style={{fontSize: fs(18)}} className="w-full font-cute font-black bg-transparent border-b-[3px] border-fuchsia-300 focus:border-fuchsia-500 focus:outline-none text-fuchsia-900 placeholder-fuchsia-300 allow-select transition-colors pb-1" />
-                 <div className="flex gap-2 items-center mt-1">
+                 <div className="pk-entry-toolbar flex gap-2 items-center mt-1">
                    <input type="text" value={recordOptions} onChange={e=>onUpdateOptions(e.target.value)} placeholder="선택지 (쉼표로 구분)" style={{fontSize: fs(13)}} className="flex-1 p-2 bg-white border-2 border-fuchsia-200 rounded-xl text-stone-700 font-bold outline-none focus:border-fuchsia-400 allow-select" />
                    <button onClick={()=>{onResetData(); playSound('pop');}} style={{fontSize: fs(13)}} className="px-4 py-2 bg-white hover:bg-rose-50 border-2 border-rose-200 text-rose-500 rounded-xl font-bold whitespace-nowrap transition shadow-[0_2px_0_#fecdd3] active:translate-y-[2px] active:shadow-none">초기화</button>
                  </div>
@@ -7113,7 +7124,7 @@ window.OI_ASSETS = {
                <div style={{ gridTemplateColumns: 'repeat(' + Math.max(2, Math.floor(width / 175)) + ', minmax(0,1fr))' }} className="flex-1 overflow-y-auto border-[4px] border-stone-200 rounded-2xl bg-white p-2 grid gap-2 content-start min-h-0">
                  {students.map((st, i) => (
                    <div key={i} className="flex flex-col border-[3px] border-stone-100 bg-stone-50 rounded-xl p-2 hover:border-fuchsia-300 transition">
-                     <span style={{fontSize: fs(14)}} className="font-bold text-stone-800 mb-1.5 truncate border-b-2 border-stone-200 pb-1">{st}</span>
+                     <span style={{fontSize: fs(14)}} className="pk-person-name font-bold text-stone-800 mb-1.5 border-b-2 border-stone-200 pb-1">{st}</span>
                      <div className="flex flex-wrap gap-1 mt-0.5">
                        {opts.map(opt => (
                          <button key={opt} onClick={() => {onUpdateData(i, recordData[i] === opt ? null : opt); playSound('tick');}} style={{fontSize: fs(11)}} className={`px-2 py-1 rounded-lg font-bold transition-all active:scale-95 border-2 ${recordData[i] === opt ? 'bg-fuchsia-500 text-white border-fuchsia-600 shadow-[0_2px_0_#86198f]' : 'bg-white border-stone-200 text-stone-500 hover:bg-stone-100 shadow-sm'}`}>{opt}</button>
@@ -7364,10 +7375,10 @@ window.OI_ASSETS = {
           const tfs = (n) => `${Math.round(n * taScale)}px`;
 
           return (
-            <div className={`w-full h-full flex flex-col no-drag gap-2 transition-colors duration-500 rounded-[20px] ${isRunning ? 'bg-rose-50/80' : ''}`}>
-               <div className="flex bg-stone-100 rounded-xl p-1 gap-1 shrink-0 border-[3px] border-stone-200">
+            <div className={`pk-time-widget w-full h-full flex flex-col no-drag gap-2 transition-colors duration-500 rounded-[20px] ${isRunning ? 'bg-rose-50/80' : ''}`}>
+               <div className="pk-time-modes flex bg-stone-100 rounded-xl p-1 gap-1 shrink-0 border-[3px] border-stone-200">
                  {modes.map(m => (
-                   <button key={m.id} onClick={()=>{setMode(m.id); setIsRunning(false); playSound('tick');}} className={`flex-1 py-1.5 text-[10px] sm:text-xs rounded-lg font-bold border-2 transition-colors truncate ${mode===m.id?'bg-rose-400 text-rose-950 border-rose-500 shadow-[0_2px_0_#be123c]':'bg-transparent text-stone-600 border-transparent hover:bg-stone-200'}`}>
+                   <button key={m.id} onClick={()=>{setMode(m.id); setIsRunning(false); playSound('tick');}} className={`flex-1 py-1.5 text-[10px] sm:text-xs rounded-lg font-bold border-2 transition-colors ${mode===m.id?'bg-rose-400 text-rose-950 border-rose-500 shadow-[0_2px_0_#be123c]':'bg-transparent text-stone-600 border-transparent hover:bg-stone-200'}`}>
                      {m.label}
                    </button>
                  ))}
@@ -7375,9 +7386,9 @@ window.OI_ASSETS = {
                {mode === 'custom' && (
                  <input type="text" value={customTitle} onChange={e=>setCustomTitle(e.target.value)} placeholder="무엇을 재촉할까요? (예: 알림장 쓰기)" className="w-full border-4 border-rose-200 focus:border-rose-400 outline-none rounded-xl px-3 py-1.5 text-sm allow-select font-bold text-stone-700 transition shrink-0" />
                )}
-               <div className="flex-1 flex flex-col items-center justify-center min-h-0 bg-white rounded-[24px] border-[5px] border-rose-200 shadow-inner p-2 relative overflow-hidden">
+               <div className="pk-time-face flex-1 flex flex-col items-center justify-center min-h-0 bg-white rounded-[24px] border-[5px] border-rose-200 shadow-inner p-2 relative overflow-hidden">
                  {isRunning && <div className="absolute inset-0 border-[8px] border-rose-500 opacity-20 animate-pulse pointer-events-none"></div>}
-                 <div className="text-stone-500 font-bold z-10 bg-stone-100 rounded-full border-2 border-stone-200 truncate max-w-[92%]" style={{ fontSize: tfs(13), padding: `${tfs(3)} ${tfs(12)}`, marginTop: tfs(4), marginBottom: tfs(4) }}>{mode==='custom' ? (customTitle||'타임어택') : modes.find(m=>m.id===mode).label.split(' ')[1]} 진행 중!</div>
+                 <div className="pk-time-status text-stone-500 font-bold z-10 bg-stone-100 rounded-full border-2 border-stone-200 max-w-[92%]" style={{ fontSize: tfs(13), padding: `${tfs(3)} ${tfs(12)}`, marginTop: tfs(4), marginBottom: tfs(4) }}>{mode==='custom' ? (customTitle||'타임어택') : modes.find(m=>m.id===mode).label.split(' ')[1]} 진행 중!</div>
                  <div className={`font-black font-cute drop-shadow-md tracking-tighter z-10 transition-colors ${isRunning && seconds <= 10 ? 'text-rose-500 animate-wiggle' : 'text-stone-700'}`} style={{ fontVariantNumeric: 'tabular-nums', fontSize: tfs(56), marginBottom: tfs(6) }}>
                    {formatTime(seconds)}
                  </div>
@@ -7701,7 +7712,7 @@ window.OI_ASSETS = {
       const dateStr = now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
       const timeStr = now.toLocaleTimeString('ko-KR', { hour12: false, hour: '2-digit', minute: '2-digit' });
       const sec = now.getSeconds();
-      const words = (englishWordsText || '').split('\n').map(l => l.trim()).filter(Boolean).map(l => { const idx = l.search(/\s/); return idx === -1 ? { w: l, m: '' } : { w: l.slice(0, idx), m: l.slice(idx + 1).trim() }; });
+      const words = window.PicklingScreenBalance.parseEnglishWords(englishWordsText);
       const bdays = (birthdaysText || '').split('\n').map(l => l.trim()).filter(Boolean).map(l => { const mm = l.match(/(\d{1,2})[^\d]+(\d{1,2})/); if (!mm) return null; const nm = l.replace(mm[0], '').replace(/[월일]/g, '').trim(); return { name: nm || '친구', mon: parseInt(mm[1]), day: parseInt(mm[2]) }; }).filter(Boolean);
       const sow = new Date(now); sow.setDate(sow.getDate() - ((sow.getDay() + 6) % 7)); sow.setHours(0,0,0,0);
       const eow = new Date(sow); eow.setDate(eow.getDate() + 7);
@@ -7749,8 +7760,8 @@ window.OI_ASSETS = {
                 <div className="pk-spotlight-title">🔤 이번 주 영어 단어</div>
                 <div className="pk-words-grid flex flex-wrap items-center justify-center gap-2">
                   {words.map((wd, i) => (
-                    <div key={i} className="pk-word-chip">
-                      <span className="pk-word-en">{wd.w}</span>
+                    <div key={i} className={'pk-word-chip'+(wd.w.split(/\s+/).some(token=>token.length>12)?' pk-word-wide':'')}>
+                      <span className="pk-word-en" aria-label={wd.w}>{wd.w.split(/\s+/).map((token,index)=><React.Fragment key={index}>{index>0?' ':null}<span className={'pk-word-token'+(token.length>28?' pk-word-token-long':'')}>{token}</span></React.Fragment>)}</span>
                       {wd.m && <span className="pk-word-ko">{wd.m}</span>}
                     </div>
                   ))}
@@ -8281,7 +8292,7 @@ window.OI_ASSETS = {
             </div>
           )}
 
-          <aside aria-label="화면 설정" className="pk-settings absolute z-[6000] pointer-events-auto"><div className="pk-settings-heading">설정</div><div className="pk-settings-content" id="classroom-settings"><button type="button" className="pk-motion-toggle" aria-pressed={sceneMotion} onClick={()=>setSceneMotion(value=>{safeLocalStorage.setItem('oi_scene_motion',value?'off':'on');return !value;})}><span>친구 움직임</span><small>{sceneMotion?'켜짐 ●':'꺼짐 ○'}</small></button><button type="button" className="pk-motion-toggle pk-snow-toggle" aria-pressed={snowMotion} onClick={()=>setSnowMotion(value=>{safeLocalStorage.setItem('oi_snow_motion',value?'off':'on');return !value;})}><span>눈 내리기</span><small>{snowMotion?'켜짐 ●':'꺼짐 ○'} · 겨울 테마</small></button>
+          <aside aria-label="화면 설정" className="pk-settings absolute z-[6000] pointer-events-auto"><div className="pk-settings-heading">설정</div><div className="pk-settings-content" id="classroom-settings"><button type="button" className="pk-motion-toggle" aria-pressed={sceneMotion} onClick={()=>setSceneMotion(value=>{safeLocalStorage.setItem('oi_scene_motion',value?'off':'on');return !value;})}><span>친구 움직임</span><small>{sceneMotion?'켜짐 ●':'꺼짐 ○'}</small></button><button type="button" className="pk-motion-toggle pk-snow-toggle" title="겨울 테마에서 눈이 내려요" aria-pressed={snowMotion} onClick={()=>setSnowMotion(value=>{safeLocalStorage.setItem('oi_snow_motion',value?'off':'on');return !value;})}><span>눈 내리기</span><small>{snowMotion?'켜짐 ●':'꺼짐 ○'}</small></button>
             <div className="relative flex flex-col items-center">
               <button onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)} className="w-14 h-14 bg-white hover:bg-emerald-50 border-[3px] border-emerald-200 rounded-2xl flex flex-col items-center justify-center shadow-sm transition active:scale-95">
                 <i className="fa-solid fa-image text-xl text-emerald-600"></i>
@@ -8390,8 +8401,8 @@ window.OI_ASSETS = {
           {isWindowToolsOpen&&<WindowToolsDialog widgets={widgets} onOpen={openSelectedTools} onClose={()=>setWindowToolsOpen(false)}/>}
 
           {isBackupOpen && (
-            <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm pointer-events-auto" style={{ zIndex: 10000 }}>
-              <div className="bg-white rounded-3xl border-4 border-emerald-200 max-w-lg w-full p-6 shadow-[8px_8px_0px_#bbf7d0] flex flex-col gap-4">
+            <div className="pk-editor-backdrop absolute inset-0 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm pointer-events-auto" style={{ zIndex: 10000 }}>
+              <div className="pk-editor-dialog bg-white rounded-3xl border-4 border-emerald-200 max-w-lg w-full p-6 shadow-[8px_8px_0px_#bbf7d0] flex flex-col gap-4">
                 <div className="flex items-center justify-between border-b-[3px] border-emerald-100 pb-2">
                   <h3 className="font-cute font-bold text-2xl text-emerald-800 flex items-center gap-2"><i className="fa-solid fa-box-archive"></i> 오이반 서랍장 (백업 및 복원)</h3>
                   <button type="button" onClick={() => setIsBackupOpen(false)} className="text-stone-400 hover:text-stone-600 text-lg"><i className="fa-solid fa-xmark"></i></button>
@@ -8420,8 +8431,8 @@ window.OI_ASSETS = {
           )}
 
           {isEnglishOpen && (
-            <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm pointer-events-auto" style={{ zIndex: 10000 }}>
-              <div className="bg-white rounded-3xl border-4 border-rose-200 max-w-md w-full p-6 shadow-[8px_8px_0px_#fecdd3] flex flex-col gap-3">
+            <div className="pk-editor-backdrop absolute inset-0 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm pointer-events-auto" style={{ zIndex: 10000 }}>
+              <div className="pk-editor-dialog bg-white rounded-3xl border-4 border-rose-200 max-w-md w-full p-6 shadow-[8px_8px_0px_#fecdd3] flex flex-col gap-3">
                 <div className="flex items-center justify-between border-b-[3px] border-rose-100 pb-2">
                   <h3 className="font-cute font-bold text-2xl text-rose-500 flex items-center gap-2">🔤 이번 주 영어 단어</h3>
                   <button type="button" onClick={() => setIsEnglishOpen(false)} className="text-stone-400 hover:text-stone-600 text-lg"><i className="fa-solid fa-xmark"></i></button>
@@ -8437,8 +8448,8 @@ window.OI_ASSETS = {
           )}
 
           {isBirthdayOpen && (
-            <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm pointer-events-auto" style={{ zIndex: 10000 }}>
-              <div className="bg-white rounded-3xl border-4 border-pink-200 max-w-md w-full p-6 shadow-[8px_8px_0px_#fbcfe8] flex flex-col gap-3">
+            <div className="pk-editor-backdrop absolute inset-0 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm pointer-events-auto" style={{ zIndex: 10000 }}>
+              <div className="pk-editor-dialog bg-white rounded-3xl border-4 border-pink-200 max-w-md w-full p-6 shadow-[8px_8px_0px_#fbcfe8] flex flex-col gap-3">
                 <div className="flex items-center justify-between border-b-[3px] border-pink-100 pb-2">
                   <h3 className="font-cute font-bold text-2xl text-pink-500 flex items-center gap-2">🎂 우리 반 생일 등록</h3>
                   <button type="button" onClick={() => setIsBirthdayOpen(false)} className="text-stone-400 hover:text-stone-600 text-lg"><i className="fa-solid fa-xmark"></i></button>
@@ -8454,8 +8465,8 @@ window.OI_ASSETS = {
           )}
 
           {isDdayOpen && (
-            <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm pointer-events-auto" style={{ zIndex: 10000 }}>
-              <div className="bg-white rounded-3xl border-4 border-sky-200 max-w-md w-full p-6 shadow-[8px_8px_0px_#bae6fd] flex flex-col gap-3">
+            <div className="pk-editor-backdrop absolute inset-0 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm pointer-events-auto" style={{ zIndex: 10000 }}>
+              <div className="pk-editor-dialog bg-white rounded-3xl border-4 border-sky-200 max-w-md w-full p-6 shadow-[8px_8px_0px_#bae6fd] flex flex-col gap-3">
                 <div className="flex items-center justify-between border-b-[3px] border-sky-100 pb-2">
                   <h3 className="font-cute font-bold text-2xl text-sky-500 flex items-center gap-2">📅 디데이 등록</h3>
                   <button type="button" onClick={() => setIsDdayOpen(false)} className="text-stone-400 hover:text-stone-600 text-lg"><i className="fa-solid fa-xmark"></i></button>
@@ -8471,8 +8482,8 @@ window.OI_ASSETS = {
           )}
 
           {isGoalOpen && (
-            <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm pointer-events-auto" style={{ zIndex: 10000 }}>
-              <div className="bg-white rounded-3xl border-4 border-rose-200 max-w-md w-full p-6 shadow-[8px_8px_0px_#fecdd3] flex flex-col gap-3">
+            <div className="pk-editor-backdrop absolute inset-0 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm pointer-events-auto" style={{ zIndex: 10000 }}>
+              <div className="pk-editor-dialog bg-white rounded-3xl border-4 border-rose-200 max-w-md w-full p-6 shadow-[8px_8px_0px_#fecdd3] flex flex-col gap-3">
                 <div className="flex items-center justify-between border-b-[3px] border-rose-100 pb-2">
                   <h3 className="font-cute font-bold text-2xl text-rose-500 flex items-center gap-2">🎯 이번 주 목표</h3>
                   <button type="button" onClick={() => setIsGoalOpen(false)} className="text-stone-400 hover:text-stone-600 text-lg"><i className="fa-solid fa-xmark"></i></button>
@@ -8488,8 +8499,8 @@ window.OI_ASSETS = {
           )}
 
           {isSettingOpen && (
-            <div className="absolute inset-0 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in pointer-events-auto" style={{ zIndex: 10000 }}>
-              <div className="bg-white rounded-3xl border-4 border-emerald-200 max-w-md w-full p-6 shadow-[8px_8px_0px_#bbf7d0] flex flex-col gap-3">
+            <div className="pk-editor-backdrop absolute inset-0 bg-black/60 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in pointer-events-auto" style={{ zIndex: 10000 }}>
+              <div className="pk-editor-dialog bg-white rounded-3xl border-4 border-emerald-200 max-w-md w-full p-6 shadow-[8px_8px_0px_#bbf7d0] flex flex-col gap-3">
                 <div className="flex items-center justify-between border-b-[3px] border-emerald-100 pb-2">
                   <h3 className="font-cute font-bold text-2xl text-emerald-800 flex items-center gap-2"><i className="fa-solid fa-users"></i> 우리 반 명렬 편집</h3>
                   <button type="button" onClick={() => setIsSettingOpen(false)} className="text-stone-400 hover:text-stone-600 text-lg"><i className="fa-solid fa-xmark"></i></button>

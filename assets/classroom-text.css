@@ -1,0 +1,44 @@
+/* Keep complete headings and handwritten glyphs within their actual controls. */
+.pk-widget-heading{flex:1 1 auto;min-width:0;line-height:1.45;letter-spacing:normal;overflow:visible;white-space:normal;padding:2px 0}
+.pk-widget-heading>i{flex:none;line-height:1.25}.pk-widget-name{min-width:0;white-space:normal;word-break:keep-all;overflow-wrap:anywhere}
+.pk-widget-tools{flex:none;align-self:flex-start;padding-top:2px}.pk-widget-tools>button{flex:none}.pk-widget-body{min-height:0;min-width:0}
+#root [data-theme] .pk-settings-content>button:not(.pk-motion-toggle),#root [data-theme] .pk-settings-content>div>button{height:auto!important;min-height:46px!important;padding:2px 3px!important;gap:1px}
+#root [data-theme] .pk-settings-content button>i{flex:none;font-size:16px!important;line-height:16px!important}
+#root [data-theme] .pk-settings-content button:not(.pk-motion-toggle)>span:first-child:not(:last-child){flex:none;font-size:18px!important;line-height:18px!important}
+#root [data-theme] .pk-settings-content button>span:last-child{line-height:1.4!important;margin-top:0!important;overflow-wrap:anywhere}
+#root [data-theme] .pk-settings-content>.pk-motion-toggle>span{font-size:11px!important;line-height:1.4!important;white-space:nowrap;flex:none}#root [data-theme] .pk-motion-toggle small{white-space:nowrap;line-height:1.5;flex:none}
+.pk-notes-toolbar{flex-wrap:wrap;gap:8px}.pk-notes-toolbar>div{flex-wrap:wrap;min-width:0;gap:6px}.pk-notes-toolbar button{flex:none;min-height:36px;line-height:1.5;white-space:normal;overflow-wrap:anywhere}.pk-notes-widget textarea{min-height:100px}
+.pk-entry-toolbar{flex-wrap:wrap;row-gap:8px;min-width:0}.pk-entry-toolbar input{min-width:0;width:0;flex:1 1 100px}.pk-entry-toolbar>button{flex:none;min-height:36px;line-height:1.5;white-space:normal}
+.pk-person-name{white-space:normal;line-height:1.5;min-width:0;word-break:keep-all;overflow-wrap:anywhere}
+.pk-time-widget{min-width:0}.pk-time-modes{flex-wrap:wrap;gap:6px}.pk-time-modes>button{flex:1 1 90px;min-width:0;min-height:36px;padding:5px;line-height:1.5;white-space:normal;overflow:visible;text-overflow:clip}
+.pk-time-status{white-space:normal;overflow:visible;text-overflow:clip;line-height:1.5;overflow-wrap:anywhere;text-align:center}.pk-time-face{min-height:120px;overflow:visible}
+.pk-clock-tabs>button{flex:1 1 70px;min-width:70px;line-height:1.5}.pk-clock-controls{align-items:center}.pk-clock-controls button{line-height:1.5;min-height:42px}
+.pk-window-dialog>header>div{min-width:0;flex:1}.pk-window-dialog h2{white-space:normal;word-break:keep-all;overflow-wrap:anywhere;line-height:1.5}.pk-window-dialog-actions>button{min-width:0;overflow-wrap:anywhere}
+.pk-editor-backdrop{position:fixed!important;padding:12px!important;overflow:auto}
+.pk-editor-dialog{min-width:0;max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain}
+.pk-editor-dialog>div{min-width:0}.pk-editor-dialog>div:first-child{gap:10px;align-items:flex-start}.pk-editor-dialog h3{min-width:0;white-space:normal;word-break:keep-all;overflow-wrap:anywhere;line-height:1.5}
+.pk-editor-dialog>div:first-child>button{flex:none;min-width:32px;min-height:32px;line-height:1.4}
+.pk-editor-dialog textarea{flex:0 0 auto;max-height:38dvh;min-height:100px;line-height:1.6}.pk-editor-dialog button,.pk-editor-dialog label{line-height:1.5;white-space:normal;overflow-wrap:anywhere}
+.pk-editor-dialog p{line-height:1.65;overflow-wrap:anywhere}.pk-editor-dialog :is(.flex-1,input){min-width:0}
+.pk-timetable-widget{min-height:0;overflow:auto}.pk-subject-field{display:block;box-sizing:border-box;flex:none;width:100%;max-width:100%;min-height:3.3em;padding:2px;resize:none;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;overflow:hidden;text-overflow:clip;line-height:1.45}
+.pk-subject-row{flex:1 0 auto;min-height:100px}.pk-subject-week-row{flex:1 0 auto;min-height:66px}
+/* Phrases wrap between English words; the Korean meaning never squeezes an English word. */
+#root [data-theme] .pk-hero-card .pk-word-chip{display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:3px;padding:6px 8px;white-space:normal;min-width:0}
+#root [data-theme] .pk-hero-card .pk-word-en{display:block;width:100%;min-width:0;line-height:1.4;white-space:normal;word-break:normal;overflow-wrap:normal;text-align:center}
+.pk-word-token{display:inline-block;white-space:nowrap;line-height:1.4}.pk-word-token-long{white-space:normal;overflow-wrap:anywhere;max-width:100%}
+#root [data-theme] .pk-hero-card .pk-word-ko{display:block;width:100%;line-height:1.5;white-space:normal;word-break:keep-all;overflow-wrap:anywhere;text-align:center}
+.pk-word-wide{grid-column:1/-1}
+/* Compact headers reserve enough room for complete English phrases and meanings. */
+#root [data-theme] .pk-hero-card:is([data-balance=compact],[data-balance=short]) .pk-hero-header{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 6px;align-items:center}
+#root [data-theme] .pk-hero-card:is([data-balance=compact],[data-balance=short]) .pk-hero-greeting{grid-column:1/-1}
+#root [data-theme] .pk-hero-card:is([data-balance=compact],[data-balance=short]) .pk-hero-date{font-size:11px!important;line-height:1.4;padding:2px 4px;word-break:keep-all;overflow-wrap:anywhere}
+#root [data-theme] .pk-hero-card:is([data-balance=compact],[data-balance=short]) .pk-word-chip{gap:2px;padding:3px 4px}
+/* Each toolbar icon and caption shares the same centered box and baseline. */
+#root [data-theme] footer.pk-tools-all{align-items:center!important;justify-content:center!important;text-align:center!important}
+#root [data-theme] footer.pk-tools-all :is(.pk-primary-tools,.pk-extra-tools,.pk-window-actions){align-items:center!important;justify-content:center!important}
+#root [data-theme] footer.pk-tools-all button{align-items:center!important;justify-content:center!important;text-align:center!important}
+#root [data-theme] footer.pk-tools-all button>i{display:flex;align-items:center;justify-content:center;width:20px;height:18px;line-height:18px!important;flex:none}
+#root [data-theme] footer.pk-tools-all button>span:not(.pk-screen-badge){text-align:center!important;align-self:center;box-sizing:border-box}
+@media(max-width:1000px){.pk-editor-dialog{padding:16px!important}.pk-editor-dialog h3{font-size:20px!important}.pk-widget-heading{line-height:1.5}}
+@media(min-width:1001px) and (max-height:640px){#root [data-theme]>aside.pk-settings{max-height:calc(100dvh - 32px);overflow:auto}#root [data-theme] .pk-settings-content>div>div{position:fixed!important;right:110px!important;top:20px!important}}
+@media(min-width:1001px) and (max-height:640px){#root [data-theme] main>.pk-hero-host{bottom:auto!important;height:520px!important;min-height:520px}.pk-workspace-spacer{min-height:744px}}

@@ -11,6 +11,7 @@
     let result;
     for(const preset of PRESETS){
       for(const key of ['clock','body','word','title','meaning','gap','pad'])box.style.setProperty('--hero-'+key,preset[key]+'px');
+      box.dataset.balance=preset.name;
       const fits=content.scrollHeight<=available+1&&content.scrollWidth<=box.clientWidth+1;
       result={name:preset.name,fits};box.dataset.balance=preset.name;
       if(fits)return result;
@@ -36,6 +37,14 @@
     face.dataset.clockFit=fits?'fit':'overflow';return {size,fits};
   }
   function motionEnabled(saved,reduced){return saved==='on'||(saved!=='off'&&!reduced);}
-  root.PicklingScreenBalance={fitHero,fitClock,motionEnabled,PRESETS};
+  function parseEnglishLine(value){
+    const line=String(value||'').trim();if(!line)return null;
+    const explicit=line.match(/^(.+?)\s*(?:\||\t)\s*(.+)$/);if(explicit)return {w:explicit[1].trim(),m:explicit[2].trim()};
+    const korean=line.search(/[가-힣ㄱ-ㅎㅏ-ㅣ]/);if(korean>0){let boundary=korean;const prefix=line.slice(0,korean),space=prefix.search(/\s+[^\s]*$/);if(space>=0&&prefix.slice(space).trim()&&!/[A-Za-z]/.test(prefix.slice(space)))boundary=space;
+      const w=line.slice(0,boundary).trim().replace(/\s*[:=—]\s*$/,'');return {w,m:line.slice(boundary).trim()};}
+    const number=line.match(/^(.+?\S)\s+([+-]?\d[\d\s.,:/%℃°~\-]*)$/);return number?{w:number[1].trim(),m:number[2].trim()}:{w:line,m:''};
+  }
+  function parseEnglishWords(text){return String(text||'').split(/\r?\n/).map(parseEnglishLine).filter(Boolean);}
+  root.PicklingScreenBalance={fitHero,fitClock,motionEnabled,parseEnglishLine,parseEnglishWords,PRESETS};
   if(typeof module!=='undefined')module.exports=root.PicklingScreenBalance;
 })(typeof window==='undefined'?globalThis:window);
