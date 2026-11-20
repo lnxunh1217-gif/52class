@@ -10,3 +10,13 @@
 .pk-lunch-editor{min-height:0;min-width:0;font-size:16px;line-height:1.5;padding:10px 12px;overflow:auto}
 #root [data-widget-id=lunch]>div:nth-child(2){min-height:0;padding:10px;overflow:hidden}
 @media(max-width:1000px){#root [data-widget-id=lunch]{min-height:320px!important}#root [data-widget-id=lunch] .pk-lunch-menu{flex:none;min-height:230px}}
+/* Five softly pressed wells: three side dishes above rice and soup. */
+.pk-lunch-tray{--tray-icons:flex;--tray-icon-size:18px;box-sizing:border-box;flex:1;min-height:0;min-width:0;width:100%;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));grid-template-areas:'a a b b c c' 'd d d e e e';gap:6px;padding:8px;border:2px solid #bdcebd;border-radius:22px;background:linear-gradient(135deg,#e9f0e4,#d7e5da 50%,#edf1e4);box-shadow:inset 0 2px 1px #ffffffdd,0 3px 0 #d4dfc8;color:var(--pk-ink,#435533);font-size:16px;line-height:1.4}
+.pk-lunch-well{min-width:0;min-height:0;padding:4px 5px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;box-sizing:border-box;border:1px solid #c7d7c2;border-radius:14px;background:linear-gradient(155deg,#fffef9,#f2f6e9);box-shadow:inset 0 2px 4px #9bb6a12b,0 1px 0 #ffffffe0;overflow:auto;scrollbar-width:thin}
+.pk-lunch-well-a{grid-area:a;background:linear-gradient(155deg,#fffef6,#f8f2d9)}.pk-lunch-well-b{grid-area:b;background:linear-gradient(155deg,#fffaf5,#fae9dc)}.pk-lunch-well-c{grid-area:c;background:linear-gradient(155deg,#fff9fb,#f9eaf0)}.pk-lunch-well-d{grid-area:d;border-radius:16px 16px 18px 18px}.pk-lunch-well-e{grid-area:e;border-radius:16px 16px 18px 18px;background:linear-gradient(155deg,#f9fdff,#e7f2f0)}
+.pk-lunch-food-icon{display:var(--tray-icons);align-items:center;justify-content:center;flex:none;font-size:var(--tray-icon-size);line-height:1;height:var(--tray-icon-size)}
+.pk-lunch-well ul{flex:none;list-style:none;margin:0;padding:0;width:100%;min-width:0;text-align:center;display:flex;flex-direction:column;gap:2px}
+.pk-lunch-well li{margin:0;padding:0;font:inherit;word-break:keep-all;overflow-wrap:anywhere}.pk-lunch-well li+li{padding-top:2px;border-top:1px dashed #c8d8c466}
+.pk-lunch-empty-well{font-size:16px;color:#becdb6}
+@media(max-width:1000px){#root [data-widget-id=lunch] .pk-lunch-tray{flex:1;min-height:230px}}
+.pk-lunch-well{justify-content:safe center}

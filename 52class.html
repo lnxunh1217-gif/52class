@@ -6398,14 +6398,14 @@ body {
   <link rel="stylesheet" href="assets/classroom-themes.css?v=20261119-pantone">
   <link rel="stylesheet" href="assets/classroom-winter.css?v=20261119-winter">
   <script src="assets/mascot-reminders.js?v=20261117-2"></script>
-<script src="assets/classroom-lunch.js?v=20261119-lunch"></script>
-<link rel="stylesheet" href="assets/classroom-lunch.css?v=20261119-lunch">
+<script src="assets/classroom-lunch.js?v=20261120-tray"></script>
+<link rel="stylesheet" href="assets/classroom-lunch.css?v=20261120-tray">
 <script src="assets/classroom-balance.js?v=20261120-rhythm"></script>
 <link rel="stylesheet" href="assets/classroom-balance.css?v=20261120-snow-shapes">
 <script src="assets/classroom-windows.js?v=20261120-toolbar-qr"></script>
 <link rel="stylesheet" href="assets/classroom-windows.css?v=20261120-windows">
 <link rel="stylesheet" href="assets/classroom-text.css?v=20261120-text">
-<link rel="stylesheet" href="assets/classroom-ui.css?v=20261120-toolbar-qr">
+<link rel="stylesheet" href="assets/classroom-ui.css?v=20261120-tray">
 </head>
 <body class="w-screen h-screen relative bg-slate-100 overflow-hidden">
 
@@ -6943,7 +6943,7 @@ window.OI_ASSETS = {
              </div>
           ) : isEditing ? (
             <textarea value={shownLunch} onChange={(e) => onUpdateLunch(e.target.value)} placeholder="오늘의 급식 메뉴를 입력하세요..." style={{ fontSize: `${baseFont}px`, lineHeight: '1.5' }} aria-label="급식 메뉴 수정" className="pk-lunch-editor flex-1 w-full min-h-0 bg-amber-50/50 border-[4px] border-emerald-200 focus:border-emerald-200 rounded-2xl p-4 font-cute font-black text-stone-800 outline-none resize-none allow-select shadow-inner transition-colors" />
-          ) : (<ul ref={menuBox} className="pk-lunch-menu allow-select" aria-label="급식 메뉴 전체">{(menuLines.length?menuLines:['자동 연동으로 급식을 불러오거나 수정 버튼으로 메뉴를 적어 주세요.']).map((line,index)=><li key={index}>{line}</li>)}</ul>)}
+          ) : (<div ref={menuBox} className="pk-lunch-tray allow-select" role="group" aria-label="5구 급식판">{window.PicklingLunchLayout.tray(menuLines).map(well=><section key={well.id} className={'pk-lunch-well pk-lunch-well-'+well.id} data-lunch-well={well.id}><span className="pk-lunch-food-icon" aria-hidden="true">{well.icon}</span><ul aria-label={well.kind==='rice'?'밥 칸':well.kind==='soup'?'국 칸':'반찬 칸'}>{well.items.map((line,index)=><li key={index}>{line}</li>)}</ul>{!well.items.length&&<span className="pk-lunch-empty-well" aria-hidden="true">♡</span>}</section>)}</div>)}
         </div>
       );
     };
@@ -7984,7 +7984,7 @@ window.OI_ASSETS = {
 
       const generateDefaultLayout = (w, h) => {
         const safeW = Math.max(w, 800); 
-        const safeH = Math.max(h, 500); 
+        const safeH = h<=640?744:Math.max(h,500);
         const fixedZoneW = Math.floor(safeW * 0.5); 
         const topOffset = 104; 
         const bottomMargin = 120;
