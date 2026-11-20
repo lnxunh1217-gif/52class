@@ -6400,8 +6400,8 @@ body {
   <script src="assets/mascot-reminders.js?v=20261117-2"></script>
 <script src="assets/classroom-lunch.js?v=20261119-lunch"></script>
 <link rel="stylesheet" href="assets/classroom-lunch.css?v=20261119-lunch">
-<script src="assets/classroom-balance.js?v=20261120-balance"></script>
-<link rel="stylesheet" href="assets/classroom-balance.css?v=20261120-balance">
+<script src="assets/classroom-balance.js?v=20261120-rail-clock"></script>
+<link rel="stylesheet" href="assets/classroom-balance.css?v=20261120-rail-clock">
 </head>
 <body class="w-screen h-screen relative bg-slate-100 overflow-hidden">
 
@@ -7219,11 +7219,18 @@ window.OI_ASSETS = {
       const format=seconds=>String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(Math.floor(seconds%60)).padStart(2,'0');
       const setTimer=value=>{const seconds=Math.max(0,Math.min(24*60*60,Math.round(value)));total.current=Math.max(1,seconds);onSetTimerSeconds(seconds);setRunning(false);};
       const progress=Math.max(0,Math.min(1,1-timerSeconds/total.current));
-      const numberSize=Math.max(26,Math.min(150,width/(mode==='stopwatch'?6.6:5.4),(height-150)*.34));
+      const clockFace=useRef(null),clockDigits=useRef(null);
       const showTime=mode==='clock'?now.toLocaleTimeString('ko-KR',{hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'}):mode==='timer'?format(timerSeconds):format(elapsed/1000)+'.'+String(Math.floor(elapsed%1000/10)).padStart(2,'0');
-      return <div className="pk-clock-widget no-drag"><div className="pk-clock-tabs">{[['clock','시계'],['timer','타이머'],['stopwatch','스톱워치']].map(([id,label])=><button key={id} aria-pressed={mode===id} onClick={()=>onSetSubMode(id)}>{label}</button>)}</div><div className="pk-clock-face" data-running={mode==='timer'?running:swRunning}>
-        <p className="pk-clock-date">{mode==='clock'?now.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'}):mode==='timer'?'치이카와와 함께 집중해요':'치이카와와 함께 달려요'}</p><div className="pk-clock-digits" style={{fontSize:numberSize+'px'}}>{showTime}</div>
-        {mode==='clock'?<img className="pk-balloon-mascot" src="assets/classroom-mascots/balloon-v1.png" alt="풍선을 부는 치이카와"/>:<div className="pk-run-track"><span className="pk-run-fill" style={{width:(mode==='timer'?progress*100:50)+'%'}}/><img src="assets/classroom-mascots/running-v1.png" alt="달리는 치이카와" style={{left:(mode==='timer'?progress*80:40)+'%'}}/></div>}
+
+      useEffect(()=>{
+        const face=clockFace.current,digits=clockDigits.current;if(!face||!digits)return;
+        let active=true,frame=0;const fit=()=>{if(!active)return;cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{if(active)window.PicklingScreenBalance.fitClock(face,digits);});};
+        fit();const observer=window.ResizeObserver?new ResizeObserver(fit):null;observer?.observe(face);document.fonts?.ready.then(fit).catch(()=>{});
+        return()=>{active=false;cancelAnimationFrame(frame);observer?.disconnect();};
+      },[mode,width,height,showTime]);
+      return <div className="pk-clock-widget no-drag"><div className="pk-clock-tabs">{[['clock','시계'],['timer','타이머'],['stopwatch','스톱워치']].map(([id,label])=><button key={id} aria-pressed={mode===id} onClick={()=>onSetSubMode(id)}>{label}</button>)}</div><div ref={clockFace} className="pk-clock-face" data-running={mode==='timer'?running:swRunning}>
+        <p className="pk-clock-date">{mode==='clock'?now.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'short'}):mode==='timer'?'치이카와와 함께 집중해요':'치이카와와 함께 달려요'}</p><div ref={clockDigits} className="pk-clock-digits">{showTime}</div>
+        {mode==='clock'?<img className="pk-balloon-mascot" src="assets/classroom-mascots/balloon-v1.png" alt="풍선을 부는 치이카와"/>:<div className="pk-run-track"><span className="pk-run-fill" style={{width:(mode==='timer'?progress*100:50)+'%'}}/><img src="assets/classroom-mascots/running-v1.png" alt="달리는 치이카와" style={{left:'calc('+(mode==='timer'?progress:.4)+' * (100% - var(--clock-visual)))'}}/></div>}
       </div>{mode==='timer'&&<><div className="pk-clock-controls">{[1,3,5,10].map(n=><button key={n} onClick={()=>setTimer(n*60)}>{n}분</button>)}<label><input aria-label="타이머 분 직접 입력" type="number" min="1" max="1440" value={inputMin} onChange={e=>setInputMin(e.target.value)} placeholder="분"/><button onClick={()=>{const n=Number(inputMin);if(Number.isFinite(n)&&n>0)setTimer(n*60);}}>설정</button></label></div><div className="pk-clock-controls"><button disabled={!timerSeconds} onClick={()=>{if(!running)total.current=Math.max(total.current,timerSeconds);setRunning(v=>!v);}}>{running?'잠깐 멈춤':'시작'}</button><button onClick={()=>setTimer(0)}>초기화</button></div></>}{mode==='stopwatch'&&<div className="pk-clock-controls"><button onClick={()=>setSwRunning(v=>!v)}>{swRunning?'멈춤':'시작'}</button><button onClick={()=>{setSwRunning(false);setElapsed(0);}}>초기화</button></div>}</div>;
     };
 
@@ -7658,10 +7665,10 @@ window.OI_ASSETS = {
 
     const OI = (typeof window !== 'undefined' && window.OI_ASSETS) || {};
 
-    const ClassroomAmbience=({theme,motion})=>{
+    const ClassroomAmbience=({theme,motion,snow=motion})=>{
       const winter=theme==='winter-snow';
       const friends=['chiikawa','hachiware','usagi','momonga'];
-      return <><div className="pk-roaming-layer" data-motion={motion} aria-hidden="true"><div className="pk-roamer pk-roamer-oyang"><img src="assets/mascots/oyang-transparent-v2.png" alt="" draggable="false"/></div><div className="pk-roamer pk-roamer-oio"><img src="assets/mascots/oio-transparent-v2.png" alt="" draggable="false"/></div>{friends.map((id,index)=><div key={id} className={'pk-roamer pk-roamer-friend pk-roamer-'+index}><img src={winter?'assets/winter/'+id+'.png':'assets/chiikawa/'+id+'.png'} alt="" draggable="false"/></div>)}</div>{winter&&<div className="pk-snow-layer" data-motion={motion} aria-hidden="true">{Array.from({length:32},(_,i)=><i key={i} style={{left:((i*37)%100)+'%',width:(3+i%4)+'px',height:(3+i%4)+'px',animationDuration:(12+i%11)+'s',animationDelay:-(i*1.7)+'s','--snow-drift':((i%2?1:-1)*(12+i%25))+'px'}}/>)}</div>}</>;
+      return <><div className="pk-roaming-layer" data-motion={motion} aria-hidden="true"><div className="pk-roamer pk-roamer-oyang"><img src="assets/mascots/oyang-transparent-v2.png" alt="" draggable="false"/></div><div className="pk-roamer pk-roamer-oio"><img src="assets/mascots/oio-transparent-v2.png" alt="" draggable="false"/></div>{friends.map((id,index)=><div key={id} className={'pk-roamer pk-roamer-friend pk-roamer-'+index}><img src={winter?'assets/winter/'+id+'.png':'assets/chiikawa/'+id+'.png'} alt="" draggable="false"/></div>)}</div>{winter&&<div className="pk-snow-layer" data-motion={snow} aria-hidden="true">{Array.from({length:32},(_,i)=><i key={i} style={{left:((i*37)%100)+'%',width:(5+i%4)+'px',height:(5+i%4)+'px',animationDuration:(12+i%11)+'s',animationDelay:-(i*1.7)+'s','--snow-drift':((i%2?1:-1)*(12+i%25))+'px'}}/>)}</div>}</>;
     };
 
     const IdleHero = ({ textColor, englishWordsText, birthdaysText, weeklyGoalText, ddayText }) => {
@@ -7847,6 +7854,7 @@ window.OI_ASSETS = {
 
 
       const [sceneMotion,setSceneMotion]=useState(()=>safeLocalStorage.getItem('oi_scene_motion')!=='off');
+      const [snowMotion,setSnowMotion]=useState(()=>safeLocalStorage.getItem('oi_snow_motion')!=='off');
       const [isBackupOpen, setIsBackupOpen] = useState(false);
       const [backupInputCode, setBackupInputCode] = useState("");
 
@@ -8314,7 +8322,7 @@ window.OI_ASSETS = {
             </div>
           )}
 
-          <aside aria-label="화면 설정" className="pk-settings absolute z-[6000] pointer-events-auto"><div className="pk-settings-heading">설정</div><div className="pk-settings-content" id="classroom-settings"><button type="button" className="pk-motion-toggle" aria-pressed={sceneMotion} onClick={()=>setSceneMotion(value=>{safeLocalStorage.setItem('oi_scene_motion',value?'off':'on');return !value;})}>{sceneMotion?'눈·친구 움직임 끄기':'눈·친구 움직임 켜기'}</button>
+          <aside aria-label="화면 설정" className="pk-settings absolute z-[6000] pointer-events-auto"><div className="pk-settings-heading">설정</div><div className="pk-settings-content" id="classroom-settings"><button type="button" className="pk-motion-toggle" aria-pressed={sceneMotion} onClick={()=>setSceneMotion(value=>{safeLocalStorage.setItem('oi_scene_motion',value?'off':'on');return !value;})}><span>친구 움직임</span><small>{sceneMotion?'켜짐 ●':'꺼짐 ○'}</small></button><button type="button" className="pk-motion-toggle pk-snow-toggle" aria-pressed={snowMotion} onClick={()=>setSnowMotion(value=>{safeLocalStorage.setItem('oi_snow_motion',value?'off':'on');return !value;})}><span>눈 내리기</span><small>{snowMotion?'켜짐 ●':'꺼짐 ○'} · 겨울 테마</small></button>
             <div className="relative flex flex-col items-center">
               <button onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)} className="w-14 h-14 bg-white hover:bg-emerald-50 border-[3px] border-emerald-200 rounded-2xl flex flex-col items-center justify-center shadow-sm transition active:scale-95">
                 <i className="fa-solid fa-image text-xl text-emerald-600"></i>
@@ -8373,7 +8381,7 @@ window.OI_ASSETS = {
             </button>
           </div></aside>
 
-          <ClassroomAmbience theme={bgStyle.id} motion={sceneMotion}/><MascotReminder />
+          <ClassroomAmbience theme={bgStyle.id} motion={sceneMotion} snow={snowMotion}/><MascotReminder />
           <main className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
             {(
               <div style={{ left: `${Math.floor(windowSize.width * 0.5) + 20}px`, width: `${Math.max(280, Math.floor(windowSize.width * 0.5) - 40 - 300)}px`, top: '104px', bottom: '96px' }} className="pk-hero-host absolute flex flex-col items-center justify-center text-center select-none pointer-events-none transition-all duration-300">

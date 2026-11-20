@@ -17,6 +17,24 @@
     }
     return result;
   }
-  root.PicklingScreenBalance={fitHero,PRESETS};
+  function fitClock(face,digits){
+    if(!face||!digits||face.clientWidth<1||face.clientHeight<1)return null;
+    const style=root.getComputedStyle?.(face)||{},num=v=>parseFloat(v)||0;
+    face.style.setProperty('--clock-visual',Math.round(Math.max(32,Math.min(90,face.clientHeight*.18)))+'px');
+    const others=Array.from(face.children).filter(child=>child!==digits);
+    const fixed=others.reduce((sum,child)=>{const s=root.getComputedStyle?.(child)||{};return sum+child.offsetHeight+num(s.marginTop)+num(s.marginBottom);},0);
+    const availableWidth=face.clientWidth-num(style.paddingLeft)-num(style.paddingRight);
+    const availableHeight=face.clientHeight-num(style.paddingTop)-num(style.paddingBottom)-fixed-num(style.rowGap||style.gap)*(face.children.length-1);
+    let size=Math.max(12,Math.min(180,Math.floor(availableHeight/1.5)));
+    digits.style.fontSize=size+'px';
+    for(let i=0;i<2;i++){
+      const ratio=Math.min(1,availableWidth/Math.max(1,digits.scrollWidth),availableHeight/Math.max(1,digits.scrollHeight));
+      if(ratio>=1)break;
+      size=Math.max(12,Math.floor(size*Math.max(0,ratio)));digits.style.fontSize=size+'px';
+    }
+    const fits=digits.scrollWidth<=availableWidth+1&&digits.scrollHeight<=availableHeight+1;
+    face.dataset.clockFit=fits?'fit':'overflow';return {size,fits};
+  }
+  root.PicklingScreenBalance={fitHero,fitClock,PRESETS};
   if(typeof module!=='undefined')module.exports=root.PicklingScreenBalance;
 })(typeof window==='undefined'?globalThis:window);
