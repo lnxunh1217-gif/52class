@@ -57,3 +57,16 @@
 .pk-clock-digits{flex:none;width:max-content;max-width:none;font-size:24px;line-height:1.5;letter-spacing:0;padding:0 4px;overflow:visible}
 .pk-clock-face .pk-balloon-mascot{height:var(--clock-visual);max-height:none;flex:none}.pk-clock-face .pk-run-track{height:var(--clock-visual);margin-top:12px;margin-bottom:6px}.pk-clock-face .pk-run-track img{height:var(--clock-visual);width:var(--clock-visual);bottom:0}
 .pk-clock-controls button{line-height:1.4;white-space:nowrap}.pk-clock-controls label{flex-wrap:wrap;justify-content:center}
+
+/* Explicit per-effect opt-in wins over OS reduced-motion CSS. Defaults still respect it. */
+#root .pk-roaming-layer[data-motion="true"] .pk-roamer-oyang{animation:pk-balanced-wander 8s ease-in-out infinite!important}
+#root .pk-roaming-layer[data-motion="true"] .pk-roamer-oio{animation:pk-balanced-wander 11s ease-in-out -6s infinite!important}
+#root .pk-roaming-layer[data-motion="true"] .pk-roamer-0{animation:pk-balanced-wander 9s ease-in-out -2s infinite!important}
+#root .pk-roaming-layer[data-motion="true"] .pk-roamer-1{animation:pk-balanced-wander 12s ease-in-out -9s infinite!important}
+#root .pk-roaming-layer[data-motion="true"] .pk-roamer-2{animation:pk-safe-bottom-left 10s ease-in-out infinite!important}
+#root .pk-roaming-layer[data-motion="true"] .pk-roamer-3{animation:pk-safe-bottom-right 11s ease-in-out -7s infinite!important}
+#root .pk-roaming-layer[data-motion="true"] .pk-roamer img{animation:pk-safe-roamer-step 1.4s ease-in-out infinite!important}
+#root .pk-roaming-layer[data-motion="false"] *{animation-play-state:paused!important}
+#root .pk-snow-layer[data-motion="true"]{display:block!important}
+#root .pk-snow-layer[data-motion="true"] i{animation-name:pk-snowfall!important;animation-play-state:running!important}
+#root .pk-snow-layer[data-motion="false"]{display:none!important}

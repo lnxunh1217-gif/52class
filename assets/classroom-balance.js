@@ -35,6 +35,7 @@
     const fits=digits.scrollWidth<=availableWidth+1&&digits.scrollHeight<=availableHeight+1;
     face.dataset.clockFit=fits?'fit':'overflow';return {size,fits};
   }
-  root.PicklingScreenBalance={fitHero,fitClock,PRESETS};
+  function motionEnabled(saved,reduced){return saved==='on'||(saved!=='off'&&!reduced);}
+  root.PicklingScreenBalance={fitHero,fitClock,motionEnabled,PRESETS};
   if(typeof module!=='undefined')module.exports=root.PicklingScreenBalance;
 })(typeof window==='undefined'?globalThis:window);

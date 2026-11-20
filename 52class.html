@@ -6400,8 +6400,8 @@ body {
   <script src="assets/mascot-reminders.js?v=20261117-2"></script>
 <script src="assets/classroom-lunch.js?v=20261119-lunch"></script>
 <link rel="stylesheet" href="assets/classroom-lunch.css?v=20261119-lunch">
-<script src="assets/classroom-balance.js?v=20261120-rail-clock"></script>
-<link rel="stylesheet" href="assets/classroom-balance.css?v=20261120-rail-clock">
+<script src="assets/classroom-balance.js?v=20261120-motion-optin"></script>
+<link rel="stylesheet" href="assets/classroom-balance.css?v=20261120-motion-optin">
 </head>
 <body class="w-screen h-screen relative bg-slate-100 overflow-hidden">
 
@@ -7853,8 +7853,13 @@ window.OI_ASSETS = {
       const [isSettingOpen, setIsSettingOpen] = useState(false);
 
 
-      const [sceneMotion,setSceneMotion]=useState(()=>safeLocalStorage.getItem('oi_scene_motion')!=='off');
-      const [snowMotion,setSnowMotion]=useState(()=>safeLocalStorage.getItem('oi_snow_motion')!=='off');
+      const [sceneMotion,setSceneMotion]=useState(()=>window.PicklingScreenBalance.motionEnabled(safeLocalStorage.getItem('oi_scene_motion'),window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches));
+      const [snowMotion,setSnowMotion]=useState(()=>window.PicklingScreenBalance.motionEnabled(safeLocalStorage.getItem('oi_snow_motion'),window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches));
+      useEffect(()=>{
+        const preference=window.matchMedia?.('(prefers-reduced-motion: reduce)');if(!preference)return;
+        const update=()=>{setSceneMotion(window.PicklingScreenBalance.motionEnabled(safeLocalStorage.getItem('oi_scene_motion'),preference.matches));setSnowMotion(window.PicklingScreenBalance.motionEnabled(safeLocalStorage.getItem('oi_snow_motion'),preference.matches));};
+        preference.addEventListener?.('change',update);return()=>preference.removeEventListener?.('change',update);
+      },[]);
       const [isBackupOpen, setIsBackupOpen] = useState(false);
       const [backupInputCode, setBackupInputCode] = useState("");
 
