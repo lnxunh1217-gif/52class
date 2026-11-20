@@ -1,0 +1,106 @@
+/* Visual system. Functional positioning, fit rules and window state live in their own modules. */
+#root [data-theme]{--ui-space-1:4px;--ui-space-2:8px;--ui-space-3:12px;--ui-space-4:16px;--ui-space-6:24px;--ui-radius-field:10px;--ui-radius-card:12px;--ui-radius-panel:18px;--ui-border:1px solid var(--pk-line);--ui-shadow:0 6px 22px -14px #263e5452;--ui-label:12px;--ui-body:14px;--ui-heading:15px;letter-spacing:normal;line-height:1.55}
+#root [data-theme] :is(button,input,textarea,select,label,p,h1,h2,h3,h4){letter-spacing:normal!important}
+#root [data-theme] button{line-height:1.45}
+/* Panels keep a single edge, a quiet elevation and a steady position on hover. */
+#root [data-theme] [data-widget-id]{border:var(--ui-border)!important;border-radius:var(--ui-radius-panel)!important;box-shadow:var(--ui-shadow)!important;transform:none!important}
+#root [data-theme] .widget-shadow:hover{transform:none!important}
+#root [data-theme] [data-widget-id][data-active=true]{border-color:var(--pk-focus-line)!important;box-shadow:0 0 0 1px var(--pk-focus-line),var(--ui-shadow)!important}
+#root [data-theme] .pk-widget-title{min-height:44px;padding:8px 12px;gap:8px;border-bottom:var(--ui-border);align-items:center}
+#root [data-theme] .pk-widget-heading{font-size:var(--ui-heading)!important;line-height:1.45;letter-spacing:normal;font-weight:600!important;gap:8px;padding:0}
+#root [data-theme] .pk-widget-heading>i{font-size:15px;width:18px;text-align:center;line-height:20px}
+#root [data-theme] .pk-widget-name{font-size:inherit;line-height:inherit;font-weight:600!important}
+#root [data-theme] .pk-widget-tools{align-self:center;padding:0;gap:4px}
+#root [data-theme] .pk-widget-tools>button{width:28px!important;height:28px!important;min-width:28px;min-height:28px;font-size:12px!important;line-height:1;box-shadow:none!important;transform:none!important}
+#root [data-theme] .pk-widget-body{padding:12px;background:var(--pk-card)!important}
+#root [data-theme] .pk-brand-bar{top:16px;left:16px;padding:8px 12px;border:var(--ui-border)!important;border-radius:14px!important;box-shadow:0 2px 10px -6px #263e543d!important}
+#root [data-theme] .pk-brand-bar h1{font-size:15px!important;line-height:1.4;font-weight:600!important;letter-spacing:normal}
+/* Control strips use one baseline, one field height and one gap. */
+#root [data-theme] :is(.pk-notes-widget,.pk-shared-memo,.pk-clock-widget,.pk-draw-hub,.pk-check-widget,.pk-record-widget){gap:12px}
+#root [data-theme] :is(.pk-notes-toolbar,.pk-memo-tools,.pk-clock-controls,.pk-entry-toolbar,.pk-time-modes,.pk-timetable-tabs,.pk-timetable-days){gap:8px;margin:0;align-items:center}
+#root [data-theme] :is(.pk-notes-toolbar,.pk-entry-toolbar,.pk-time-modes,.pk-timetable-tabs,.pk-timetable-days){border:var(--ui-border)!important;border-radius:12px;background:var(--pk-tint)!important;box-shadow:none!important;padding:8px}
+#root [data-theme] :is(.pk-notes-toolbar,.pk-memo-tools,.pk-clock-tabs,.pk-clock-controls,.pk-entry-toolbar,.pk-time-modes,.pk-timetable-tabs,.pk-timetable-days) button{font-size:13px;line-height:1.45;font-weight:500!important;min-height:36px;padding:6px 10px;border-radius:10px;box-shadow:none!important;transform:none!important}
+#root [data-theme] :is(.pk-entry-toolbar input,.pk-music-widget input,.pk-music-widget select){min-height:40px;padding:8px 10px;border:var(--ui-border);border-radius:10px;font-size:14px;font-weight:400!important;line-height:1.5}
+#root [data-theme] :is(.pk-memo-status,.pk-music-help,.pk-music-preset,.pk-clock-date){font-size:12px;font-weight:400!important;line-height:1.6;overflow-wrap:anywhere}
+#root [data-theme] .pk-clock-tabs{padding:4px;gap:4px;border:var(--ui-border);border-radius:12px;background:var(--pk-tint)}
+#root [data-theme] .pk-clock-tabs button{min-height:36px;font-size:13px;font-weight:500!important;padding:6px 8px;border-radius:9px}
+#root [data-theme] .pk-clock-face{padding:16px;border:var(--ui-border);border-radius:14px;background:var(--pk-tint)}
+#root [data-theme] .pk-clock-controls{gap:8px}.pk-clock-controls label{gap:8px}
+#root [data-theme] .pk-timetable-widget{gap:12px}
+#root [data-theme] .pk-subject-field{font-size:clamp(14px,var(--subject-size,18px),22px)!important;font-weight:500!important;line-height:1.5}
+#root [data-theme] .pk-timetable-days{padding:4px;gap:4px}
+#root [data-theme] .pk-timetable-days button{min-height:32px;padding:4px 6px;font-size:12px}
+#root [data-theme] [data-widget-id=grid-checklist] table :is(th,td){font-size:13px!important;line-height:1.5;font-weight:400!important;padding:8px 10px}
+#root [data-theme] [data-widget-id=grid-checklist] table th{font-size:12px!important;font-weight:600!important;min-width:96px}
+#root [data-theme] [data-widget-id=grid-checklist] table :is(th,td):first-child{min-width:108px;white-space:normal;word-break:keep-all}
+#root [data-theme] [data-widget-id=record] .pk-person-name{font-size:14px!important;font-weight:500!important;line-height:1.5}
+#root [data-theme] [data-widget-id=record] :is(input,button){font-size:13px!important;line-height:1.5}
+/* Main information keeps aligned headings and hanging numbered goals. */
+#root [data-theme] .pk-hero-card{border:var(--ui-border)!important;border-radius:18px!important;box-shadow:var(--ui-shadow)!important}
+#root [data-theme] .pk-hero-greeting{border:var(--ui-border)!important;border-radius:12px!important;background:var(--pk-tint)!important;font-weight:500!important;letter-spacing:normal}
+#root [data-theme] .pk-hero-card .pk-spotlight{border:1px solid var(--pk-focus-line)!important;border-radius:12px!important;box-shadow:none!important}
+#root [data-theme] .pk-hero-card .pk-spotlight-title{text-align:left!important;font-weight:600!important;line-height:1.4;margin-bottom:8px}
+#root [data-theme] .pk-hero-card .pk-weekly-goals-text{font-weight:400!important;line-height:1.55;white-space:normal}
+.pk-goal-line+.pk-goal-line{margin-top:8px}.pk-goal-numbered{display:grid;grid-template-columns:max-content minmax(0,1fr);column-gap:8px}.pk-goal-marker{font-variant-numeric:tabular-nums;font-size:.9em;font-weight:600;line-height:inherit}
+#root [data-theme] .pk-words-grid{gap:8px!important}
+#root [data-theme] .pk-word-chip{border-radius:10px;padding:8px 10px;gap:4px;background:var(--pk-card);box-shadow:none!important}
+#root [data-theme] .pk-word-en{font-weight:600!important;letter-spacing:normal}
+#root [data-theme] .pk-word-ko{font-weight:400!important}
+#root [data-theme] .pk-hero-card:is([data-balance=compact],[data-balance=short]) .pk-goal-line+.pk-goal-line{margin-top:4px}
+#root [data-theme] .pk-hero-card:is([data-balance=compact],[data-balance=short]) .pk-weekly-goals-text{line-height:1.4}
+#root [data-theme] .pk-hero-card:is([data-balance=compact],[data-balance=short]) .pk-spotlight-title{margin-bottom:6px}
+#root [data-theme] .pk-hero-card:is([data-balance=compact],[data-balance=short]) .pk-word-chip{padding:3px 4px;gap:2px}
+#root [data-theme] .pk-hero-card:is([data-balance=compact],[data-balance=short]) .pk-words-grid{gap:6px!important}
+/* Settings remain one visible column on desktop, with quiet secondary controls. */
+#root [data-theme]>aside.pk-settings{right:16px!important;border:var(--ui-border)!important;border-radius:16px!important;padding:8px!important;box-shadow:var(--ui-shadow)!important}
+#root [data-theme] .pk-settings-heading{font-size:12px;font-weight:600;line-height:1.4;margin-bottom:8px}
+#root [data-theme] .pk-settings-content{gap:4px!important}
+#root [data-theme] .pk-settings-content>button,#root [data-theme] .pk-settings-content>div>button{background:var(--pk-card)!important;border:1px solid var(--pk-line)!important;border-radius:10px!important;color:var(--pk-title)!important;box-shadow:none!important;transform:none!important;transition:background-color .15s,border-color .15s}
+#root [data-theme] .pk-settings-content button:hover{background:var(--pk-tint)!important}
+#root [data-theme] .pk-settings-content button>span:last-child{font-size:11.5px!important;font-weight:500!important}
+#root [data-theme] .pk-settings-content>.pk-motion-toggle[aria-pressed=true]{background:var(--pk-tint)!important;border-color:var(--pk-focus-line)!important}
+/* Every tool stays visible. Identical icon/caption slots prevent a ragged bottom bar. */
+#root [data-theme] footer.pk-tools-all{gap:8px!important;padding:8px 10px!important;border:var(--ui-border)!important;border-radius:18px!important;box-shadow:0 8px 28px -14px #263e5466!important;align-items:center!important}
+#root [data-theme] footer.pk-tools-all :is(.pk-primary-tools,.pk-extra-tools,.pk-window-actions){gap:4px!important}
+#root [data-theme] footer.pk-tools-all :is(.pk-primary-tools,.pk-extra-tools,.pk-window-actions)>button{height:68px!important;min-height:68px!important;gap:4px;padding:4px 2px!important;border-width:1px!important;border-radius:12px!important;box-shadow:none!important;transform:none!important;transition:background-color .15s,border-color .15s}
+#root [data-theme] footer.pk-tools-all button>span:not(.pk-screen-badge){font-size:11px!important;font-weight:500!important;line-height:1.45!important;min-height:32px}
+#root [data-theme] footer.pk-tools-all button>i{font-size:16px!important;line-height:18px!important;width:20px;height:18px}
+/* Dialogs share margins, field spacing and action alignment. */
+#root [data-theme] :is(.pk-window-dialog,.pk-editor-dialog){padding:20px!important;border:var(--ui-border)!important;border-radius:20px!important;gap:16px;box-shadow:0 18px 60px -24px #20354d66!important;font-size:14px;line-height:1.6}
+#root [data-theme] :is(.pk-window-dialog h2,.pk-editor-dialog h3){font-size:20px!important;font-weight:600!important;line-height:1.4!important;margin:0}
+#root [data-theme] :is(.pk-window-dialog p,.pk-editor-dialog p){font-size:14px!important;font-weight:400!important;line-height:1.65}
+#root [data-theme] .pk-editor-dialog>div:first-child{padding-bottom:12px;gap:12px}
+#root [data-theme] .pk-editor-dialog :is(input:not([type=file]),textarea){font-size:14px!important;font-weight:400!important;line-height:1.65;border:var(--ui-border)!important;border-radius:10px;padding:10px 12px}
+#root [data-theme] :is(.pk-editor-dialog button,.pk-window-dialog button,.pk-editor-actions>label){font-size:14px!important;font-weight:500!important;line-height:1.5;min-height:40px;padding:8px 12px;border-radius:10px;box-shadow:none!important}
+#root [data-theme] :is(.pk-window-dialog>header>button,.pk-editor-dialog>div:first-child>button){width:32px;min-width:32px;height:32px;min-height:32px;padding:4px}
+#root [data-theme] .pk-window-dialog>header{gap:16px}.pk-window-dialog>header>div{display:flex;flex-direction:column;gap:8px}
+#root [data-theme] .pk-window-choices{gap:12px;padding:2px}
+#root [data-theme] .pk-window-choices label{min-height:72px;padding:12px;gap:8px;border-width:1px;border-radius:12px;font-size:14px;font-weight:500;line-height:1.5}
+#root [data-theme] .pk-window-choices small{font-size:11px;line-height:1.5;margin-top:4px;font-weight:400}
+#root [data-theme] .pk-editor-actions{gap:8px;flex-wrap:wrap;align-items:stretch}.pk-editor-actions>label{display:flex;align-items:center;justify-content:center}
+#root [data-theme] .pk-window-dialog-actions{gap:8px;padding-top:4px}
+#root [data-theme] :is(.pk-window-dialog,.pk-editor-dialog,.pk-settings) :is(button,input,textarea,select):focus-visible{outline:2px solid var(--pk-focus-line);outline-offset:2px}
+/* Green thermometer and information card share a 16px gutter beside the settings rail. */
+#root [data-theme] .pk-class-thermometer{right:116px!important;top:104px!important;bottom:120px!important;width:120px!important}
+#root [data-theme] .pk-thermometer-card{padding:12px 8px;gap:8px;border:1px solid #c6dcb1!important;border-radius:18px!important;box-shadow:var(--ui-shadow)!important}
+.pk-thermometer-label{font-size:12px;line-height:1.4;font-weight:500}.pk-thermometer-value{line-height:1.2;font-size:24px;font-weight:600}
+.pk-thermometer-well{min-height:0}.pk-thermometer-well svg{height:100%;width:auto;max-width:100%}.pk-thermometer-controls{gap:4px}.pk-thermometer-controls button{min-height:28px;font-size:12px;line-height:1.4;padding:4px;box-shadow:none!important}.pk-thermometer-mini{display:none}
+@keyframes pk-header-gentle{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
+@media(min-width:1001px) and (max-width:1199px){
+ #root [data-theme] .pk-class-thermometer{top:8px!important;bottom:auto!important;width:184px!important;height:88px!important}
+ #root [data-theme] .pk-thermometer-card{display:grid;grid-template-columns:minmax(0,1fr) max-content;gap:4px 8px;padding:8px}
+ .pk-thermometer-label{font-size:10.5px;line-height:1.3;text-align:left}.pk-thermometer-value{font-size:22px;line-height:1.2}.pk-thermometer-well{display:none}
+ .pk-thermometer-mini{display:block;grid-column:1/-1;height:4px;border-radius:4px;overflow:hidden;background:#e3f0d3}.pk-thermometer-mini>span{display:block;height:100%;background:#34d399;border-radius:4px}
+ .pk-thermometer-controls{grid-column:1/-1;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}.pk-thermometer-controls button{min-height:22px;height:24px;padding:0;font-size:11px}
+ .pk-roamer-oyang{left:360px;top:12px;width:80px;height:80px}.pk-roamer-oio{left:452px;top:12px;width:52px;height:80px}.pk-roamer-0{left:516px;top:12px;width:80px;height:80px}.pk-roamer-1{left:608px;top:12px;width:80px;height:80px}
+ #root .pk-roaming-layer[data-motion=true] :is(.pk-roamer-oyang,.pk-roamer-oio,.pk-roamer-0,.pk-roamer-1){animation-name:pk-header-gentle!important}
+}
+@media(max-width:1000px){
+ #root [data-theme] main.pk-window-workspace{padding:16px;gap:16px}
+ #root [data-theme]>aside.pk-settings{margin-left:16px!important;margin-right:16px!important;width:calc(100% - 32px)!important;padding:12px!important}
+ #root [data-theme] .pk-settings-heading{text-align:left;margin-bottom:8px}
+ #root [data-theme] :is(.pk-window-dialog,.pk-editor-dialog){padding:16px!important;gap:16px}
+ #root [data-theme] .pk-window-choices{gap:8px}.pk-window-choices label{padding:10px}
+ #root [data-theme] .pk-widget-title{padding:8px 12px!important}.pk-widget-heading{line-height:1.45}
+ #root [data-theme] footer.pk-tools-all{padding:8px 8px calc(8px + env(safe-area-inset-bottom,0px))!important;gap:4px!important;border-radius:16px 16px 0 0!important}
+}

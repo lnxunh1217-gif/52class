@@ -26,7 +26,7 @@
   function front(rows,id){return normalize(rows,id);}
   function topId(rows){return order(rows.filter(w=>!w.isMinimized)).at(-1)?.id||null;}
   function uniqueId(type,rows,seed){const stem=type+'_'+String(seed??'new'),used=new Set(rows.map(w=>w.id));let id=stem,n=1;while(used.has(id))id=stem+'_'+n++;return id;}
-  function bounds(view){const small=finite(view.width,1280)<=1000,width=Math.max(280,finite(view.width,1280)-(small?24:336));return {x:12,y:104,width,height:Math.max(240,finite(view.height,720)-104-Math.max(120,finite(view.bottom,120))),small};}
+  function bounds(view){const small=finite(view.width,1280)<=1000,width=Math.max(280,finite(view.width,1280)-(small?32:finite(view.width,1280)<1200?132:268));return {x:16,y:104,width,height:Math.max(240,finite(view.height,720)-104-Math.max(120,finite(view.bottom,120))),small};}
   const minHeight=row=>({pickling:300,clock:300,memo:260}[base(row.id)]||220);
   function arrange(rows,view){const visible=rows.filter(w=>!w.isMinimized);if(!visible.length)return rows;const b=bounds(view),gap=16,positions=new Map();
     if(b.small){let y=b.y;for(const row of visible){const h=Math.max(minHeight(row),Math.min(540,finite(row.height,360)));positions.set(row.id,{x:b.x,y,width:b.width,height:h});y+=h+gap;}}

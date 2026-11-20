@@ -1,9 +1,9 @@
 (function(root){'use strict';
   const PRESETS=[
-    {name:'roomy',clock:56,body:24,word:26,title:23,meaning:17,gap:12,pad:14},
-    {name:'regular',clock:48,body:20,word:22,title:21,meaning:16,gap:10,pad:12},
+    {name:'roomy',clock:56,body:24,word:26,title:23,meaning:17,gap:16,pad:16},
+    {name:'regular',clock:48,body:20,word:22,title:21,meaning:16,gap:12,pad:12},
     {name:'compact',clock:42,body:18,word:18,title:19,meaning:14,gap:8,pad:10},
-    {name:'short',clock:38,body:16,word:16,title:17,meaning:13,gap:6,pad:8}
+    {name:'short',clock:38,body:15,word:16,title:16,meaning:13,gap:6,pad:8}
   ];
   function fitHero(box,content){
     if(!box||!content||box.clientHeight<1||box.clientWidth<1)return null;

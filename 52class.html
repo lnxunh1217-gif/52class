@@ -6400,11 +6400,12 @@ body {
   <script src="assets/mascot-reminders.js?v=20261117-2"></script>
 <script src="assets/classroom-lunch.js?v=20261119-lunch"></script>
 <link rel="stylesheet" href="assets/classroom-lunch.css?v=20261119-lunch">
-<script src="assets/classroom-balance.js?v=20261120-text-words"></script>
+<script src="assets/classroom-balance.js?v=20261120-rhythm"></script>
 <link rel="stylesheet" href="assets/classroom-balance.css?v=20261120-snow-shapes">
-<script src="assets/classroom-windows.js?v=20261120-windows"></script>
+<script src="assets/classroom-windows.js?v=20261120-rhythm"></script>
 <link rel="stylesheet" href="assets/classroom-windows.css?v=20261120-windows">
 <link rel="stylesheet" href="assets/classroom-text.css?v=20261120-text">
+<link rel="stylesheet" href="assets/classroom-ui.css?v=20261120-rhythm">
 </head>
 <body class="w-screen h-screen relative bg-slate-100 overflow-hidden">
 
@@ -6690,7 +6691,7 @@ window.OI_ASSETS = {
         const schedule=()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(fit);};schedule();const observer=window.ResizeObserver?new ResizeObserver(entries=>{const width=entries[0]?.contentRect.width;if(width!==lastWidth){lastWidth=width;schedule();}}):null;observer?.observe(node);document.fonts?.ready.then(schedule).catch(()=>{});
         return()=>{active=false;cancelAnimationFrame(frame);observer?.disconnect();};
       },[value,style?.fontSize]);
-      return <textarea ref={field} rows="2" aria-label="교과명" title={value||''} value={value} onChange={event=>{event.target.value=event.target.value.replace(/[\r\n]+/g,'');onChange(event);}} onKeyDown={event=>{if(event.key==='Enter')event.preventDefault();}} style={{...style,lineHeight:1.45}} className={'pk-subject-field '+(className||'').replace(/\b(h-full|truncate)\b/g,'')}/>;
+      return <textarea ref={field} rows="2" aria-label="교과명" title={value||''} value={value} onChange={event=>{event.target.value=event.target.value.replace(/[\r\n]+/g,'');onChange(event);}} onKeyDown={event=>{if(event.key==='Enter')event.preventDefault();}} style={{...style,'--subject-size':style?.fontSize||'18px',lineHeight:1.5}} className={'pk-subject-field '+(className||'').replace(/\b(h-full|truncate)\b/g,'')}/>;
     };
 
     const TimetableWidget = ({ table, onUpdateTable, width, height }) => {
@@ -6710,7 +6711,7 @@ window.OI_ASSETS = {
 
       return (
         <div className="w-full h-full flex flex-col gap-1.5 no-drag">
-          <div className="flex bg-emerald-100/60 rounded-xl p-1 gap-1 shrink-0 border-2 border-emerald-200">
+          <div className="pk-timetable-tabs flex bg-emerald-100/60 rounded-xl p-1 gap-1 shrink-0 border-2 border-emerald-200">
             <button type="button" onClick={() => { setViewMode('week'); playSound('tick'); }} style={{ fontSize: fs(14) }} className={`flex-1 py-1.5 rounded-lg font-bold transition ${viewMode === 'week' ? 'bg-emerald-500 text-white shadow-[0_2px_0_#047857]' : 'text-emerald-800 hover:bg-emerald-200'}`}>한 주 보기</button>
             <button type="button" onClick={() => { setViewMode('day'); playSound('tick'); }} style={{ fontSize: fs(14) }} className={`flex-1 py-1.5 rounded-lg font-bold transition ${viewMode === 'day' ? 'bg-emerald-500 text-white shadow-[0_2px_0_#047857]' : 'text-emerald-800 hover:bg-emerald-200'}`}>하루 보기</button>
           </div>
@@ -6734,7 +6735,7 @@ window.OI_ASSETS = {
             </div>
           ) : (
             <div className="flex-1 flex flex-col min-h-0">
-              <div className="flex justify-between gap-1 mb-1.5 shrink-0 bg-emerald-50 p-1 rounded-xl border-2 border-emerald-100">
+              <div className="pk-timetable-days flex justify-between gap-1 mb-1.5 shrink-0 bg-emerald-50 p-1 rounded-xl border-2 border-emerald-100">
                 {days.map(d => (
                   <button key={d.id} type="button" onClick={() => { setSelectedDay(d.id); playSound('tick'); }} style={{ fontSize: fs(12) }} className={`flex-1 py-1 rounded-lg font-bold transition ${selectedDay === d.id ? 'bg-emerald-500 text-white shadow-[0_2px_0_#047857]' : 'bg-transparent text-emerald-700 hover:bg-emerald-200'}`}>{d.label}</button>
                 ))}
@@ -7055,7 +7056,7 @@ window.OI_ASSETS = {
       const fs = (size) => `${Math.round(size * scale)}px`;
 
       return (
-        <div className="w-full h-full flex flex-col gap-2 no-drag">
+        <div className="pk-check-widget w-full h-full flex flex-col gap-2 no-drag">
            <div className="pk-entry-toolbar flex gap-2 shrink-0 bg-sky-50 p-2 rounded-2xl border-[4px] border-sky-200 shadow-[4px_4px_0px_#e0f2fe]">
              <input type="text" value={newTask} onChange={e=>setNewTask(e.target.value)} placeholder="새 항목 (예: 알림장)" className="flex-1 border-2 border-sky-200 focus:border-sky-400 outline-none rounded-xl px-3 py-1.5 text-sm allow-select font-bold text-stone-700 transition" />
              <button onClick={() => { if(newTask.trim()){ onAddTask(newTask.trim()); setNewTask(""); } }} className="bg-sky-400 hover:bg-sky-500 text-white px-4 rounded-xl font-bold text-sm shadow-[0_3px_0_#7dd3fc] active:translate-y-[3px] active:shadow-none transition-all">추가</button>
@@ -7113,7 +7114,7 @@ window.OI_ASSETS = {
           const fs = (size) => `${size * scale}px`;
 
           return (
-            <div className="w-full h-full flex flex-col gap-2 no-drag">
+            <div className="pk-record-widget w-full h-full flex flex-col gap-2 no-drag">
                <div className="flex flex-col gap-2 shrink-0 bg-fuchsia-50 p-3 rounded-2xl border-[4px] border-fuchsia-300 shadow-[4px_4px_0px_#f5d0fe]">
                  <input type="text" value={recordTitle} onChange={e=>onUpdateTitle(e.target.value)} placeholder="기록 주제 (예: 1학기 글쓰기)" style={{fontSize: fs(18)}} className="w-full font-cute font-black bg-transparent border-b-[3px] border-fuchsia-300 focus:border-fuchsia-500 focus:outline-none text-fuchsia-900 placeholder-fuchsia-300 allow-select transition-colors pb-1" />
                  <div className="pk-entry-toolbar flex gap-2 items-center mt-1">
@@ -7751,7 +7752,7 @@ window.OI_ASSETS = {
             {weeklyGoalText && weeklyGoalText.trim() && (
               <div className="pk-spotlight pk-weekly-goals w-full max-w-[94%] bg-gradient-to-br from-rose-100 to-red-50 border-[3px] border-rose-300 rounded-[24px] px-4 py-2 shadow-[0_4px_0_#fecdd3]">
                 <div className="pk-spotlight-title">🎯 이번 주 목표</div>
-                <div className="pk-weekly-goals-text">{weeklyGoalText}</div>
+                <div className="pk-weekly-goals-text" role="list">{weeklyGoalText.split(/\r?\n/).filter(line=>line.trim()).map((line,index)=>{const match=line.match(/^\s*(\d+[.)])\s*(.*)$/);return <div key={index} role="listitem" className={'pk-goal-line'+(match?' pk-goal-numbered':'')}>{match?<><span className="pk-goal-marker">{match[1]+' '}</span><span>{match[2]}</span></>:<span>{line}</span>}</div>;})}</div>
               </div>
             )}
 
@@ -7828,10 +7829,10 @@ window.OI_ASSETS = {
       const adj = (d) => { onUpdateTemp(Math.max(0, Math.min(100, t + d))); playSound(d > 0 ? 'pop' : 'tick'); };
       return (
         <div data-fixed-green style={{ right: '160px', top: '86px', bottom: '118px', width: '124px' }} className="pk-class-thermometer absolute z-[300] pointer-events-auto select-none">
-          <div className="w-full h-full bg-white/85 backdrop-blur-md border-[3px] border-emerald-200 rounded-[26px] shadow-[4px_4px_0px_#bbf7d0] flex flex-col items-center py-3 px-2 gap-1.5">
-            <div className="font-cute font-black text-emerald-600 text-sm text-center leading-tight">🥒 우리 반<br/>온도계</div>
-            <div className="font-cute font-black text-emerald-600 text-2xl leading-none">{t}°</div>
-            <div className="flex-1 w-full flex items-center justify-center min-h-0">
+          <div className="pk-thermometer-card w-full h-full bg-white/85 backdrop-blur-md border-[3px] border-emerald-200 rounded-[26px] shadow-[4px_4px_0px_#bbf7d0] flex flex-col items-center py-3 px-2 gap-1.5">
+            <div className="pk-thermometer-label font-cute font-black text-emerald-600 text-sm text-center leading-tight">🥒 우리 반<br/>온도계</div>
+            <div className="pk-thermometer-value font-cute font-black text-emerald-600 text-2xl leading-none">{t}°</div>
+            <div className="pk-thermometer-mini" aria-hidden="true"><span style={{width:t+'%'}}/></div><div className="pk-thermometer-well flex-1 w-full flex items-center justify-center min-h-0">
               <svg viewBox="0 0 60 240" preserveAspectRatio="xMidYMid meet" className="h-full">
                 <clipPath id="sideCuc"><rect x="18" y="12" width="24" height="206" rx="12"/></clipPath>
                 <rect x="18" y="12" width="24" height="206" rx="12" fill="#ecfdf5" stroke="#6ee7b7" strokeWidth="3"/>
@@ -7840,7 +7841,7 @@ window.OI_ASSETS = {
                 <circle cx="30" cy="9" r="4" fill="#059669"/>
               </svg>
             </div>
-            <div className="grid grid-cols-2 gap-1 w-full">
+            <div className="pk-thermometer-controls grid grid-cols-2 gap-1 w-full">
               <button onClick={() => adj(-5)} className="py-1 rounded-lg bg-rose-100 hover:bg-rose-200 text-rose-500 font-black border border-rose-200 text-xs transition">-5</button>
               <button onClick={() => adj(5)} className="py-1 rounded-lg bg-emerald-200 hover:bg-emerald-300 text-emerald-700 font-black border border-emerald-300 text-xs transition">+5</button>
               <button onClick={() => adj(-1)} className="py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-400 font-black border border-rose-100 text-xs transition">-1</button>
@@ -8000,7 +8001,7 @@ window.OI_ASSETS = {
         const topOffset = 104; 
         const bottomMargin = 120;
         const availableH = safeH - topOffset - bottomMargin;
-        const marginX = 20; const gapX = 20; const gapY = 20;
+        const marginX = 16; const gapX = 16; const gapY = 16;
         const cardW = Math.floor((fixedZoneW - (marginX * 2) - gapX) / 2);
         const cardH = Math.floor((availableH - gapY) / 2);
 
@@ -8281,7 +8282,7 @@ window.OI_ASSETS = {
       return (
         <div data-theme={bgStyle.id} style={window.PicklingClassroomPalette?.variables(bgStyle.id)||{}} className={`w-full h-full relative transition-all duration-500 overflow-hidden ${bgStyle.cssClass}`}>
           {!isPseudoFullscreen && (
-            <div className="absolute top-3 left-4 z-[4000] pointer-events-none select-none flex items-center gap-2 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-2xl border-[3px] border-emerald-200 shadow-[4px_4px_0px_#bbf7d0]">
+            <div className="pk-brand-bar absolute top-3 left-4 z-[4000] pointer-events-none select-none flex items-center gap-2 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-2xl border-[3px] border-emerald-200 shadow-[4px_4px_0px_#bbf7d0]">
               <div className="h-8 shrink-0 flex items-center justify-center oi-bob">
                 <img src={OI.logo} alt="OiKi" className="h-7 object-contain" draggable="false" />
               </div>
@@ -8354,7 +8355,7 @@ window.OI_ASSETS = {
           <ClassroomAmbience theme={bgStyle.id} motion={sceneMotion} snow={snowMotion}/><MascotReminder />
           <main ref={workspaceRef} className="pk-window-workspace absolute inset-0 z-10 pointer-events-none overflow-hidden"><div className="pk-workspace-spacer" aria-hidden="true" style={{height:window.PicklingClassroomWindows.extent(widgets,windowViewport())+'px'}}/>
             {(
-              <div style={{ left: `${Math.floor(windowSize.width * 0.5) + 20}px`, width: `${Math.max(280, Math.floor(windowSize.width * 0.5) - 40 - 300)}px`, top: '104px', bottom: '120px' }} className="pk-hero-host absolute flex flex-col items-center justify-center text-center select-none pointer-events-none transition-all duration-300">
+              <div style={{ left: `${Math.floor(windowSize.width * 0.5)}px`, width: `${Math.max(220,Math.floor(windowSize.width * 0.5)-(windowSize.width<1200?116:252))}px`, top: '104px', bottom: '120px' }} className="pk-hero-host absolute flex flex-col items-center justify-center text-center select-none pointer-events-none transition-all duration-300">
                 <IdleHero textColor={bgStyle.textColor} englishWordsText={englishWordsText} birthdaysText={birthdaysText} weeklyGoalText={weeklyGoalText} ddayText={ddayText} />
               </div>
             )}
@@ -8413,7 +8414,7 @@ window.OI_ASSETS = {
                 </div>
                 <div className="p-3 bg-emerald-50 rounded-2xl border-2 border-emerald-200 flex flex-col gap-2">
                   <h4 className="font-bold text-xs text-emerald-950">방법 A: 컴퓨터 파일로 안전하게 관리하기</h4>
-                  <div className="flex gap-2">
+                  <div className="pk-editor-actions flex gap-2">
                     <button type="button" onClick={handleExportAsFile} className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-[0_3px_0_#047857] active:translate-y-[3px] active:shadow-none transition">📥 파일 내보내기 (.json)</button>
                     <label className="flex-1 py-2 bg-white hover:bg-stone-50 border-2 border-emerald-300 text-emerald-900 rounded-xl text-xs font-bold text-center cursor-pointer shadow-[0_3px_0_#6ee7b7] active:translate-y-[3px] active:shadow-none transition">📂 파일 불러오기<input type="file" accept=".json" onChange={handleFileImportChange} className="hidden" /></label>
                   </div>
@@ -8421,7 +8422,7 @@ window.OI_ASSETS = {
                 <div className="p-3 bg-amber-50 rounded-2xl border-2 border-amber-200 flex flex-col gap-2">
                   <h4 className="font-bold text-xs text-amber-950">방법 B: 한 줄 백업 코드 이용하기</h4>
                   <textarea value={backupInputCode} onChange={(e) => setBackupInputCode(e.target.value)} placeholder="여기에 이전에 보존해 두었던 한 줄 백업 코드를 붙여넣으세요." className="w-full h-20 border-2 border-amber-300 rounded-xl p-2 text-[10px] font-mono focus:outline-none resize-none bg-white allow-select" />
-                  <div className="flex gap-2">
+                  <div className="pk-editor-actions flex gap-2">
                     <button type="button" onClick={handleCopyBackupCode} className="flex-1 py-2 bg-amber-400 hover:bg-amber-500 text-amber-950 rounded-xl text-xs font-bold shadow-[0_3px_0_#b45309] active:translate-y-[3px] active:shadow-none transition">📋 백업 코드 복사하기</button>
                     <button type="button" onClick={handleImportBackupCode} disabled={!backupInputCode.trim()} className="flex-1 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-[0_3px_0_#b45309] active:translate-y-[3px] active:shadow-none transition disabled:opacity-50">📥 코드로 불러오기</button>
                   </div>
@@ -8439,7 +8440,7 @@ window.OI_ASSETS = {
                 </div>
                 <p className="text-xs text-stone-500 font-bold">💡 한 줄에 하나씩, <b>단어 뜻</b> 순서로 적어주세요. (예: apple 사과) — 기본화면에 계속 떠 있어요!</p>
                 <textarea value={englishWordsText} onChange={(e) => setEnglishWordsText(e.target.value)} className="w-full h-64 border-[4px] border-rose-200 focus:border-rose-300 rounded-2xl p-3 text-sm font-bold text-stone-700 font-mono focus:outline-none resize-none allow-select" placeholder={"apple 사과\nbanana 바나나\nschool 학교"} />
-                <div className="flex gap-2">
+                <div className="pk-editor-actions flex gap-2">
                   <button type="button" onClick={() => { setIsEnglishOpen(false); playSound('pop'); }} className="flex-1 py-3 bg-rose-400 hover:bg-rose-500 text-white font-bold rounded-xl shadow-[0_4px_0_#e11d48] active:translate-y-[4px] active:shadow-none transition">저장 후 닫기</button>
                   <button type="button" onClick={() => { setEnglishWordsText(''); playSound('pop'); }} className="px-4 py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl border-2 border-stone-200 shadow-[0_4px_0_#d6d3d1] active:translate-y-[4px] active:shadow-none transition text-xs">모두 지우기</button>
                 </div>
@@ -8456,7 +8457,7 @@ window.OI_ASSETS = {
                 </div>
                 <p className="text-xs text-stone-500 font-bold">💡 한 줄에 한 명씩, <b>이름 월/일</b> 로 적어주세요. (예: 김다니엘 3/15) — 생일이 있는 주 내내 기본화면에 축하 배너가 떠요!</p>
                 <textarea value={birthdaysText} onChange={(e) => setBirthdaysText(e.target.value)} className="w-full h-64 border-[4px] border-pink-200 focus:border-pink-300 rounded-2xl p-3 text-sm font-bold text-stone-700 font-mono focus:outline-none resize-none allow-select" placeholder={"김다니엘 3/15\n이시준 5/2\n박유장 12/25"} />
-                <div className="flex gap-2">
+                <div className="pk-editor-actions flex gap-2">
                   <button type="button" onClick={() => { setIsBirthdayOpen(false); playSound('pop'); }} className="flex-1 py-3 bg-pink-400 hover:bg-pink-500 text-white font-bold rounded-xl shadow-[0_4px_0_#db2777] active:translate-y-[4px] active:shadow-none transition">저장 후 닫기</button>
                   <button type="button" onClick={() => { setBirthdaysText(''); playSound('pop'); }} className="px-4 py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl border-2 border-stone-200 shadow-[0_4px_0_#d6d3d1] active:translate-y-[4px] active:shadow-none transition text-xs">모두 지우기</button>
                 </div>
@@ -8473,7 +8474,7 @@ window.OI_ASSETS = {
                 </div>
                 <p className="text-xs text-stone-500 font-bold">💡 한 줄에 하나씩, <b>이름 날짜</b> 로 적어주세요. (예: 여름방학 2026-07-25 또는 현장학습 9/12) — 기본화면에 남은 날짜가 떠요!</p>
                 <textarea value={ddayText} onChange={(e) => setDdayText(e.target.value)} className="w-full h-56 border-[4px] border-sky-200 focus:border-sky-300 rounded-2xl p-3 text-sm font-bold text-stone-700 font-mono focus:outline-none resize-none allow-select" placeholder={"여름방학 2026-07-25\n2학기 개학 2026-08-18\n현장학습 9/12"} />
-                <div className="flex gap-2">
+                <div className="pk-editor-actions flex gap-2">
                   <button type="button" onClick={() => { setIsDdayOpen(false); playSound('pop'); }} className="flex-1 py-3 bg-sky-400 hover:bg-sky-500 text-white font-bold rounded-xl shadow-[0_4px_0_#0284c7] active:translate-y-[4px] active:shadow-none transition">저장 후 닫기</button>
                   <button type="button" onClick={() => { setDdayText(''); playSound('pop'); }} className="px-4 py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl border-2 border-stone-200 shadow-[0_4px_0_#d6d3d1] active:translate-y-[4px] active:shadow-none transition text-xs">모두 지우기</button>
                 </div>
@@ -8490,7 +8491,7 @@ window.OI_ASSETS = {
                 </div>
                 <p className="text-xs text-stone-500 font-bold">💡 이번 주 우리 반 목표를 적어주세요. 기본화면에 계속 떠 있어요!</p>
                 <textarea value={weeklyGoalText} onChange={(e) => setWeeklyGoalText(e.target.value)} className="w-full h-40 border-[4px] border-rose-200 focus:border-rose-300 rounded-2xl p-3 text-sm font-bold text-stone-700 focus:outline-none resize-none allow-select" placeholder={"예) 복도에서 사뿐사뿐 걷기 🐢"} />
-                <div className="flex gap-2">
+                <div className="pk-editor-actions flex gap-2">
                   <button type="button" onClick={() => { setIsGoalOpen(false); playSound('pop'); }} className="flex-1 py-3 bg-rose-400 hover:bg-rose-500 text-white font-bold rounded-xl shadow-[0_4px_0_#e11d48] active:translate-y-[4px] active:shadow-none transition">저장 후 닫기</button>
                   <button type="button" onClick={() => { setWeeklyGoalText(''); playSound('pop'); }} className="px-4 py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl border-2 border-stone-200 shadow-[0_4px_0_#d6d3d1] active:translate-y-[4px] active:shadow-none transition text-xs">지우기</button>
                 </div>
@@ -8507,7 +8508,7 @@ window.OI_ASSETS = {
                 </div>
                 <p className="text-xs text-stone-500 font-bold">💡 학생 이름을 한 줄에 한 명씩 적어주세요.</p>
                 <textarea value={studentsText} onChange={(e) => setStudentsText(e.target.value)} className="w-full h-72 border-[4px] border-emerald-200 focus:border-emerald-200 rounded-2xl p-3 text-sm font-bold text-stone-700 font-mono focus:outline-none resize-none allow-select" placeholder={"예시)\n1. 김다니엘\n2. 김시준..."} />
-                <div className="flex gap-2">
+                <div className="pk-editor-actions flex gap-2">
                   <button type="button" onClick={saveStudentSettings} className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-[0_4px_0_#047857] active:translate-y-[4px] active:shadow-none transition">저장 후 적용</button>
                   <button type="button" onClick={() => { setStudentsText(DEFAULT_STUDENTS.join('\n')); playSound('pop'); }} className="px-4 py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold rounded-xl border-2 border-stone-200 shadow-[0_4px_0_#d6d3d1] active:translate-y-[4px] active:shadow-none transition text-xs">기본값 복원</button>
                 </div>
