@@ -20,3 +20,13 @@
 .pk-lunch-empty-well{font-size:16px;color:#becdb6}
 @media(max-width:1000px){#root [data-widget-id=lunch] .pk-lunch-tray{flex:1;min-height:230px}}
 .pk-lunch-well{justify-content:safe center}
+
+/* Generated physical tray. Text areas follow its photographed well interiors. */
+.pk-lunch-tray{position:relative;display:block;padding:0;border:0;border-radius:20px;background:transparent url('lunch-tray/mint-realistic-v1.png') center/100% 100% no-repeat;box-shadow:0 3px 8px #476c4e24;isolation:isolate}
+.pk-lunch-tray .pk-lunch-well{position:absolute;margin:0;padding:0;border:0;border-radius:0;background:none;box-shadow:none;overflow:auto;gap:2px}
+.pk-lunch-tray .pk-lunch-well-a{left:5%;top:10%;width:26%;height:34%}
+.pk-lunch-tray .pk-lunch-well-b{left:37%;top:10%;width:26%;height:34%}
+.pk-lunch-tray .pk-lunch-well-c{left:69%;top:10%;width:26%;height:34%}
+.pk-lunch-tray .pk-lunch-well-d{left:7%;top:59%;width:38%;height:33%}
+.pk-lunch-tray .pk-lunch-well-e{left:55%;top:59%;width:37%;height:33%}
+.pk-lunch-tray .pk-lunch-well li+li{border-top:1px dashed #66885b44}
