@@ -1,0 +1,5 @@
+/* 겨울 테마 배경 영상 (assets/classroom-snow-video.js). 칠판·카드 글씨가 잘 보이도록 흐리게, 모든 내용 뒤에 깔아요.
+   isolation으로 테마 상자 안에서만 쌓이게 해서, 영상은 배경색 위·다른 내용 아래(z-index:-1)에 놓여요. */
+#root [data-theme="winter-snow"]{isolation:isolate}
+#root [data-theme="winter-snow"] > .pk-snow-video{position:absolute;inset:0;z-index:-1;width:100%;height:100%;object-fit:cover;opacity:.55;pointer-events:none}
+@media (prefers-reduced-motion: reduce){#root [data-theme="winter-snow"] > .pk-snow-video{opacity:.4}}
