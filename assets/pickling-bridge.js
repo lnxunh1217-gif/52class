@@ -1,5 +1,11 @@
 (function(root){'use strict';
-const normalized=name=>String(name||'').replace(/^\s*\d+\s*[.번)\-:]?\s*/,'').trim();
+const clean=name=>String(name||'').normalize('NFC').replace(/[\u200B-\u200D\uFEFF]/g,'').trim();
+const normalized=name=>clean(name).replace(/^\s*\d+\s*[.번)\-:]?\s*/,'').trim();
+function resolveStudent(label,rows){
+ const text=clean(label),number=/^(\d{1,2})\s*(?:[.번)\-:]|\s)/.exec(text);
+ if(number){const found=rows.filter(r=>r.number===Number(number[1]));return found.length===1?found[0]:null;}
+ const name=normalized(text),found=rows.filter(r=>normalized(r.name)===name);return found.length===1?found[0]:null;
+}
 function create({getFrame,origin,onStatus,onTemp,onMemo,onDisconnect}){
  let ready=false,lastTemp=null,pendingLife=null,theme=null,words=null,sentWords=null,wordTimer=0;const requests=new Map(),memoRequests=new Map();
  const validMemo=memo=>memo&&typeof memo.text==='string'&&memo.text.length<=1500&&Number.isSafeInteger(memo.revision)&&memo.revision>=0&&(memo.date===''||/^\d{4}-\d{2}-\d{2}$/.test(memo.date));
@@ -28,10 +34,10 @@ function create({getFrame,origin,onStatus,onTemp,onMemo,onDisconnect}){
   saveMemo(fields){return new Promise(resolve=>{if(!ready){resolve({ok:false,message:'피클링 카드에 먼저 교사 계정으로 로그인해 주세요.'});return;}const id=root.crypto.randomUUID();const timer=root.setTimeout(()=>{memoRequests.delete(id);resolve({ok:false,message:'저장 확인이 늦어요. 같은 내용으로 다시 눌러 주세요.'});},15000);memoRequests.set(id,result=>{root.clearTimeout(timer);resolve(result);});if(!post({...fields,type:'board-memo-save',id})){root.clearTimeout(timer);memoRequests.delete(id);resolve({ok:false,message:'피클링 카드를 열어 주세요.'});}});},
   openSuggestions(){if(ready)post({type:'board-suggestions-open'});},
   openLife(number){const data={type:'board-life-open',number};if(!ready||!post(data))pendingLife=data;},
-  recordWarning(fields){return new Promise(resolve=>{if(!ready){resolve({ok:false,message:'피클링 카드에 먼저 로그인해 주세요.'});return;}const timeout=root.setTimeout(()=>{requests.delete(fields.id);resolve({ok:false,message:'저장 응답이 늦어요. 같은 사유를 다시 눌러 주세요.'});},15000);requests.set(fields.id,result=>{root.clearTimeout(timeout);resolve(result);});if(!post({type:'board-warning-add',...fields})){root.clearTimeout(timeout);requests.delete(fields.id);resolve({ok:false,message:'피클링 카드를 열어 주세요.'});}});},
+  recordWarning(fields){return new Promise(resolve=>{if(!ready){resolve({ok:false,message:'피클링 카드에 먼저 로그인해 주세요.'});return;}const timeout=root.setTimeout(()=>{requests.delete(fields.id);resolve({ok:false,message:'저장 응답이 늦어요. 같은 사유를 다시 눌러 주세요.'});},30000);requests.set(fields.id,result=>{root.clearTimeout(timeout);resolve(result);});if(!post({type:'board-warning-add',...fields})){root.clearTimeout(timeout);requests.delete(fields.id);resolve({ok:false,message:'피클링 카드를 열어 주세요.'});}});},
   undoWarning(number,id,revision){const data={type:'board-warning-undo',number,id,revision};if(!ready||!post(data))pendingLife=data;},
   words(text){words=String(text||'');root.clearTimeout(wordTimer);wordTimer=root.setTimeout(sendWords,1500);},
   refresh(){if(ready)post({type:'board-refresh'});},destroy(){for(const done of memoRequests.values())done({ok:false,message:'연결이 종료됐어요. 내용을 확인해 주세요.'});memoRequests.clear();root.clearTimeout(wordTimer);root.removeEventListener('message',message);}};
 }
-root.PicklingScreenBridge={create,normalized};
+root.PicklingScreenBridge={create,normalized,resolveStudent};
 })(typeof window==='undefined'?globalThis:window);

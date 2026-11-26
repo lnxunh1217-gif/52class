@@ -6390,7 +6390,7 @@ body {
   </style>
   <!-- 피클링과 같은 디자인 (글꼴·색·모양) + 치이카와 친구들 -->
   <link rel="stylesheet" href="pickling-look.css?v=20261117-2">
-  <script src="assets/pickling-bridge.js?v=20261119-winter"></script>
+  <script src="assets/pickling-bridge.js?v=20261126-student-number"></script>
   <script src="assets/classroom-tools.js?v=20261119-hub"></script>
   <script src="assets/classroom-palette.js?v=20261119-winter"></script>
   <link rel="stylesheet" href="assets/classroom-tools.css?v=20261119-cozy">
@@ -8253,12 +8253,12 @@ window.OI_ASSETS = {
       };
       const saveSharedMemo=fields=>picklingBridge.current?.saveMemo(fields)||Promise.resolve({ok:false,message:'피클링 카드를 먼저 연결해 주세요.'});
       const openPicklingLife=number=>{picklingBridge.current?.openLife(number);showPickling();};
-      const handleQuickWarning=(idx,fields)=>{const row=picklingStatus?.warnings.find(r=>r.name.trim()===window.PicklingScreenBridge.normalized(students[idx]));return row?picklingBridge.current.recordWarning({...fields,number:row.number}):Promise.resolve({ok:false,message:'피클링 명단 연결을 확인해 주세요.'});};
-      const handleUndoWarning=idx=>{const row=picklingStatus?.warnings.find(r=>r.name.trim()===window.PicklingScreenBridge.normalized(students[idx]));if(row?.undo){picklingBridge.current?.undoWarning(row.number,row.undo.id,row.undo.revision);showPickling();}};
+      const handleQuickWarning=(idx,fields)=>{const row=window.PicklingScreenBridge.resolveStudent(students[idx],picklingStatus?.warnings||[]);return row?picklingBridge.current.recordWarning({...fields,number:row.number}):Promise.resolve({ok:false,message:'피클링 명단 연결을 확인해 주세요.'});};
+      const handleUndoWarning=idx=>{const row=window.PicklingScreenBridge.resolveStudent(students[idx],picklingStatus?.warnings||[]);if(row?.undo){picklingBridge.current?.undoWarning(row.number,row.undo.id,row.undo.revision);showPickling();}};
       const handleUpdateWarning=(idx,refresh=false)=>{
         if(refresh){picklingBridge.current?.refresh();return;}
         const name=window.PicklingScreenBridge.normalized(students[idx]);
-        const row=picklingStatus?.warnings.find(r=>r.name.trim()===name);
+        const row=window.PicklingScreenBridge.resolveStudent(students[idx],picklingStatus?.warnings||[]);
         if(row)openPicklingLife(row.number);
       };
       const handleUpdateVoiceLevel = (idx) => setVoiceLevel(idx);
@@ -8366,7 +8366,7 @@ window.OI_ASSETS = {
                 {w.id === 'memo' && <SharedMemoWidget memo={sharedMemo} connected={!!picklingStatus&&!!sharedMemo} onSave={saveSharedMemo} onConnect={showPickling} width={w.width} height={w.height} />}
                 {w.id.startsWith('qr') && <QRCodeWidget text={w.data?.text !== undefined ? w.data.text : qrText} onUpdateText={(val) => w.id === 'qr' ? handleUpdateQrText(val) : handleUpdateWidgetData(w.id, { text: val })} label={w.data?.label !== undefined ? w.data.label : qrLabel} onUpdateLabel={(val) => w.id === 'qr' ? handleUpdateQrLabel(val) : handleUpdateWidgetData(w.id, { label: val })} width={w.width} height={w.height} />}
                 {w.id === 'clock' && <DateClockWidget subMode={clockSubMode} onSetSubMode={handleSetClockSubMode} timerSeconds={clockTimerSeconds} onSetTimerSeconds={handleSetClockTimerSeconds} width={w.width} height={w.height} />}
-                {w.id === 'warning-board' && <WarningBoardWidget students={students} connected={!!picklingStatus} syncLabel={picklingStatus?.syncedAt} warningStates={Object.fromEntries(students.map((name,i)=>{const row=picklingStatus?.warnings.find(r=>r.name.trim()===window.PicklingScreenBridge.normalized(name));return [i,row?row.count:-1];}))} onUpdateWarning={handleUpdateWarning} onUndoWarning={handleUndoWarning} onQuickWarning={handleQuickWarning} reasons={picklingStatus?.reasons||[]} undoAvailable={students.map(name=>!!picklingStatus?.warnings.find(r=>r.name.trim()===window.PicklingScreenBridge.normalized(name))?.undo)} width={w.width} height={w.height} />}
+                {w.id === 'warning-board' && <WarningBoardWidget students={students} connected={!!picklingStatus} syncLabel={picklingStatus?.syncedAt} warningStates={Object.fromEntries(students.map((name,i)=>{const row=window.PicklingScreenBridge.resolveStudent(name,picklingStatus?.warnings||[]);return [i,row?row.count:-1];}))} onUpdateWarning={handleUpdateWarning} onUndoWarning={handleUndoWarning} onQuickWarning={handleQuickWarning} reasons={picklingStatus?.reasons||[]} undoAvailable={students.map(name=>!!window.PicklingScreenBridge.resolveStudent(name,picklingStatus?.warnings||[])?.undo)} width={w.width} height={w.height} />}
                 {w.id === 'voice-level' && <VoiceLevelWidget voiceLevel={voiceLevel} onUpdateVoiceLevel={handleUpdateVoiceLevel} width={w.width} height={w.height} />}
                 {w.id === 'scoreboard' && <ScoreboardWidget teams={scoreboardTeams} onUpdateScore={handleUpdateScore} onUpdateTeamName={handleUpdateTeamName} onAddTeam={handleAddTeam} onRemoveTeam={handleRemoveTeam} onResetScores={handleResetScores} width={w.width} height={w.height} />}
                 {w.id === 'time-attack' && <TimeAttackWidget width={w.width} height={w.height} />}
