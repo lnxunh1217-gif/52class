@@ -8033,8 +8033,9 @@ window.OI_ASSETS = {
             let saved = initialMaster.widgets;
             if ((initialMaster.layoutVersion || 1) < LAYOUT_VERSION) {
               saved = saved.filter(w => !['board', 'fast-sites'].includes(w.id.split('_')[0]));
-              if (!saved.some(w => w.id === 'pickling')) saved = [...saved, def.find(d => d.id === 'pickling')];
             }
+            // 새로고침하면 피클링 카드는 늘 다시 떠요 (닫아 두었어도). 크기·자리는 아래 FIXED_IDS에서 기본값으로 돌아가요.
+            if (!saved.some(w => w.id.split('_')[0] === 'pickling')) saved = [...saved, def.find(d => d.id === 'pickling')];
             saved=saved.filter(w=>w.id!=='checklist');
             if(saved.some(w=>w.id==='random'))saved=saved.filter(w=>w.id!=='lottery');else saved=saved.map(w=>w.id==='lottery'?{...w,id:'random'}:w);
             const restored=saved.map(w => {
