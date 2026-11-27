@@ -6390,7 +6390,7 @@ body {
   </style>
   <!-- 피클링과 같은 디자인 (글꼴·색·모양) + 치이카와 친구들 -->
   <link rel="stylesheet" href="pickling-look.css?v=20261117-2">
-  <script src="assets/pickling-bridge.js?v=20261126-student-number"></script>
+  <script src="assets/pickling-bridge.js?v=20261127-warning-receipt"></script>
   <script src="assets/classroom-tools.js?v=20261119-hub"></script>
   <script src="assets/classroom-palette.js?v=20261119-winter"></script>
   <link rel="stylesheet" href="assets/classroom-tools.css?v=20261119-cozy">
@@ -6408,6 +6408,17 @@ body {
 <link rel="stylesheet" href="assets/classroom-ui.css?v=20261120-tray">
 <script src="assets/classroom-snow-video.js?v=20261124-snow2"></script>
 <link rel="stylesheet" href="assets/classroom-snow-video.css?v=20261124-snow">
+<style id="pk-warning-responsive">
+/* Warning widgets can be narrower than a phone: the cards reflow independently of viewport width. */
+.pk-warning-board{min-width:0;line-height:1.55;letter-spacing:normal}
+.pk-warning-students{grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));padding:2px}
+.pk-warning-students>*{min-width:0;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;word-break:keep-all}
+.pk-warning-board button{min-height:44px;line-height:1.45;white-space:normal}
+.pk-warning-board .pk-warning-lights{gap:4px;padding:5px}
+.pk-warning-board .pk-warning-lights>button{width:44px!important;height:44px!important;flex:none;min-width:44px}
+.pk-warning-board .pk-warning-reasons{grid-column:1/-1}
+.pk-warning-board .pk-warning-reasons input{width:100%;min-width:0;box-sizing:border-box;font-size:16px}
+</style>
 </head>
 <body class="w-screen h-screen relative bg-slate-100 overflow-hidden">
 
@@ -7261,11 +7272,11 @@ window.OI_ASSETS = {
           };
           const undo=(index)=>{setReceipts(prev=>{const next={...prev};delete next[index];return next;});setMessage('피클링 카드에서 취소를 확인해 주세요.');onUndoWarning(index);};
           const open=(index)=>{if(!pendingRef.current){setPicker({index,id:crypto.randomUUID(),other:'',otherMode:false});setMessage('');}};
-          return <div className="w-full h-full flex flex-col no-drag gap-2">
+          return <div className="pk-warning-board w-full h-full flex flex-col no-drag gap-2">
             <div className="flex flex-wrap justify-between gap-2 bg-stone-100 p-2 rounded-xl"><span className="text-xs">{connected?'피클링 연결됨 · '+(syncLabel||'')+' · 꺼진 불: 사유 고르기 · 켜진 불: 최근 경고 취소':'피클링 카드에서 교사 로그인을 먼저 해 주세요.'}</span><button className="bg-white rounded-xl px-3 py-2 text-xs" onClick={()=>onUpdateWarning(null,true)}>피클링 새로고침</button></div>
-            <p role="status" className="text-sm">{message}</p><div className="flex-1 overflow-y-auto grid gap-2 min-h-0 content-start" style={{gridTemplateColumns:'repeat('+Math.max(2,Math.floor(width/160))+',minmax(0,1fr))'}}>
+            <p role="status" className="text-sm">{message}</p><div className="pk-warning-students flex-1 overflow-y-auto grid gap-2 min-h-0 content-start">
               {students.map((name,i)=>{const count=warningStates[i]??-1;return <React.Fragment key={name}><div className="border-2 border-emerald-200 rounded-2xl p-3 bg-white flex flex-col items-center gap-2">
-                <b className="text-sm text-center">{name}</b><div className="flex gap-2 bg-stone-800 rounded-full p-2" aria-label={count>=0?'오늘 경고 '+count+'회':'미연결'}>{[1,2,3].map(level=><button type="button" key={level} title={count>=level?'최근 경고 1회 취소':'경고 사유 선택'} aria-label={name+(count>=level?' 최근 경고 취소':' 경고 사유 선택')} disabled={!connected||count<0||pending||(count>=level&&!undoAvailable?.[i])} onClick={()=>count>=level?undo(i):open(i)} style={{display:'block',width:28,height:28,padding:0,borderRadius:'50%',border:0,background:count>=level?['','#34d399','#fbbf24','#f43f5e'][level]:'#57534e'}} />)}</div>
+                <b className="text-sm text-center">{name}</b><div className="pk-warning-lights flex gap-2 bg-stone-800 rounded-full p-2" aria-label={count>=0?'오늘 경고 '+count+'회':'미연결'}>{[1,2,3].map(level=><button type="button" key={level} title={count>=level?'최근 경고 1회 취소':'경고 사유 선택'} aria-label={name+(count>=level?' 최근 경고 취소':' 경고 사유 선택')} disabled={!connected||count<0||pending||(count>=level&&!undoAvailable?.[i])} onClick={()=>count>=level?undo(i):open(i)} style={{display:'block',width:28,height:28,padding:0,borderRadius:'50%',border:0,background:count>=level?['','#34d399','#fbbf24','#f43f5e'][level]:'#57534e'}} />)}</div>
                 <span className="text-xs">{count>=0?'오늘 저장된 경고 '+count+'회':'명단 연결 확인'}</span><button type="button" disabled={!connected||count<0||pending} onClick={()=>open(i)} className="rounded-xl px-3 py-2 bg-emerald-100 text-sm disabled:opacity-40">경고 +1</button>{receipts[i]&&<p className={'pk-save-receipt '+(receipts[i].ok?'is-saved':'is-error')}>{receipts[i].text}</p>}{count>0&&<button type="button" disabled={!undoAvailable?.[i]||pending} onClick={()=>undo(i)} className="text-xs underline text-stone-500 disabled:opacity-40">최근 경고 취소</button>}</div>
                 {picker?.index===i&&<div className="pk-warning-reasons"><div><b>{name} · 경고 사유</b><button disabled={pending} onClick={()=>setPicker(null)}>닫기</button></div><p>사유를 누르면 경고 1회가 바로 저장돼요.</p><div className="pk-reason-options">{reasons.map(r=><button type="button" key={r.id} disabled={pending} onClick={()=>choose(r.id)}>{r.label}</button>)}</div>{picker.otherMode&&<label>기타 사유<input maxLength="100" value={picker.other} onChange={e=>setPicker({...picker,other:e.target.value})}/><button disabled={pending} onClick={()=>choose('other')}>이 사유로 저장</button></label>}</div>}
               </React.Fragment>;})}
